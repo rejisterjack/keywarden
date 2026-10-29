@@ -22,6 +22,12 @@ go.work.sum
 # Environment and secrets
 .env
 .env.*
+!.env.example
+
+# Dashboard
+dashboard/node_modules/
+dashboard/.next/
+dashboard/tsconfig.tsbuildinfo
 
 # macOS
 .DS_Store

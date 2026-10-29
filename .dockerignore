@@ -1,0 +1,11 @@
+.git
+dashboard/node_modules
+dashboard/.next
+bin
+dist
+coverage.txt
+coverage.html
+*.test
+.env
+.env.*
+!.env.example

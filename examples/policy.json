@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "id": "orders-read",
+      "match": { "agent": "support", "tool": "orders", "name": "query" },
+      "when": { "sql": "read" },
+      "effect": "allow"
+    },
+    {
+      "id": "orders-mutate",
+      "match": { "agent": "support", "tool": "orders", "name": "query" },
+      "when": { "sql": "mutating" },
+      "effect": "require_approval",
+      "timeout_seconds": 120
+    },
+    {
+      "id": "orders-destroy",
+      "match": { "agent": "support", "tool": "orders", "name": "query" },
+      "when": { "sql": "destructive" },
+      "effect": "deny"
+    },
+    {
+      "id": "catalog-lookup",
+      "match": { "agent": "support", "tool": "catalog", "name": "lookup_order" },
+      "effect": "allow"
+    },
+    {
+      "id": "catalog-refund",
+      "match": { "agent": "support", "tool": "catalog", "name": "refund_order" },
+      "effect": "require_approval"
+    },
+    {
+      "id": "catalog-delete",
+      "match": { "agent": "support", "tool": "catalog", "name": "delete_catalog" },
+      "effect": "deny"
+    }
+  ]
+}

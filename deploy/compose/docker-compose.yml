@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: keywarden
+      POSTGRES_PASSWORD: keywarden
+      POSTGRES_DB: keywarden
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keywarden -d keywarden"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  keywarden:
+    build:
+      context: ../..
+      dockerfile: deploy/Dockerfile
+    environment:
+      KEYWARDEN_DATABASE_URL: postgres://keywarden:keywarden@postgres:5432/keywarden?sslmode=disable
+      KEYWARDEN_ADMIN_TOKEN: ${KEYWARDEN_ADMIN_TOKEN:-local-dev-admin-token}
+      KEYWARDEN_VAULT_KEY: ${KEYWARDEN_VAULT_KEY:-QkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkI=}
+      KEYWARDEN_DEMO: "1"
+      KEYWARDEN_SEED: "1"
+      KEYWARDEN_ORDERS_DSN: postgres://orders_owner:fake-orders-password@postgres:5432/orders?sslmode=disable
+      KEYWARDEN_HTTP_ADDR: ":8080"
+      KEYWARDEN_PUBLIC_URL: http://127.0.0.1:8080
+      KEYWARDEN_FIXTURE_URL: http://127.0.0.1:8080/demo/mcp
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  dashboard:
+    build:
+      context: ../../dashboard
+    environment:
+      KEYWARDEN_API_URL: http://keywarden:8080
+      KEYWARDEN_ADMIN_TOKEN: ${KEYWARDEN_ADMIN_TOKEN:-local-dev-admin-token}
+      KEYWARDEN_DASHBOARD_PASSWORD: ${KEYWARDEN_DASHBOARD_PASSWORD:-local-demo-password}
+      KEYWARDEN_SESSION_SECRET: ${KEYWARDEN_SESSION_SECRET:-local-demo-session-secret}
+    depends_on:
+      - keywarden
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
