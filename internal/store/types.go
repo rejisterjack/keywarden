@@ -49,6 +49,7 @@ type Policy struct {
 // Task is a short-lived credential for one agent.
 type Task struct {
 	ID           uuid.UUID  `json:"id"`
+	OrgID        uuid.UUID  `json:"org_id"`
 	AgentID      string     `json:"agent_id"`
 	ToolIDs      []string   `json:"tool_ids"`
 	Unrestricted bool       `json:"unrestricted"`

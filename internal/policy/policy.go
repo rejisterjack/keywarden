@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/rejisterjack/keywarden/internal/slug"
@@ -19,9 +20,13 @@ const (
 )
 
 // Document is one versioned policy. No matching rule means deny.
+// Engine selects the evaluator: "" or "rules" uses the ordered rule list,
+// "rego" evaluates the Rego module in Rego against the call input.
 type Document struct {
 	Version int    `json:"version"`
 	Default string `json:"default,omitempty"`
+	Engine  string `json:"engine,omitempty"`
+	Rego    string `json:"rego,omitempty"`
 	Rules   []Rule `json:"rules"`
 }
 
@@ -87,6 +92,21 @@ func (d Document) validate() error {
 	if d.Default != "" && d.Default != Deny {
 		return fmt.Errorf("policy default must be deny")
 	}
+	if d.Engine != "" && d.Engine != "rules" && d.Engine != "rego" {
+		return fmt.Errorf("policy engine must be rules or rego")
+	}
+	if d.Engine == "rego" {
+		if strings.TrimSpace(d.Rego) == "" {
+			return fmt.Errorf("engine rego requires a rego module")
+		}
+		if len(d.Rules) > 0 {
+			return fmt.Errorf("engine rego does not accept rules")
+		}
+		return compileRego(d.Rego)
+	}
+	if d.Rego != "" {
+		return fmt.Errorf("rego source requires engine rego")
+	}
 	seen := map[string]bool{}
 	for i, rule := range d.Rules {
 		if !slug.OK(rule.ID) {
@@ -126,7 +146,11 @@ func (d Document) validate() error {
 }
 
 // Evaluate returns the first matching rule, or deny when nothing matches.
+// A rego-engine document is evaluated by its compiled module instead.
 func (d Document) Evaluate(in Input) Decision {
+	if d.Engine == "rego" {
+		return evaluateRego(d.Rego, in)
+	}
 	for _, rule := range d.Rules {
 		if !matchField(rule.Match.Agent, in.AgentID) || !matchField(rule.Match.Tool, in.ToolID) || !matchField(rule.Match.Name, in.Name) {
 			continue
@@ -156,7 +180,16 @@ func (d Document) Evaluate(in Input) Decision {
 
 // Visible reports whether any allow or approval rule could match this tool name.
 // Argument predicates are ignored because they are not known at list time.
+// A rego-engine document is visible when the module allows or holds the call
+// with the argument predicates unknown (sql_class empty).
 func (d Document) Visible(agentID, toolID, name string) bool {
+	if d.Engine == "rego" {
+		if visible, ok := evaluateVisible(d.Rego, Input{AgentID: agentID, ToolID: toolID, Name: name}); ok {
+			return visible
+		}
+		decision := evaluateRego(d.Rego, Input{AgentID: agentID, ToolID: toolID, Name: name})
+		return decision.Effect == Allow || decision.Effect == RequireApproval
+	}
 	for _, rule := range d.Rules {
 		if rule.Effect != Allow && rule.Effect != RequireApproval {
 			continue

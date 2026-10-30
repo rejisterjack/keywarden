@@ -12,7 +12,7 @@ Tool secrets are sealed with AES-256-GCM before they are written. The tool id is
 
 Task tokens are shown once. The database stores SHA-256 only. Admin authentication compares SHA-256 digests in constant time.
 
-The audit log is append-only with a hash chain: each row's hash is SHA-256 of the previous hash and the canonical JSON payload. `keywarden audit verify` walks the chain. The payload is redacted. The argument hash commits to the original arguments, so a reviewer can prove what was decided without keeping a raw secret in the log.
+The audit log is append-only with a per-organization hash chain: each row's hash is SHA-256 of the previous hash and the canonical JSON payload. `keywarden audit verify` walks the active org's chain. The payload is redacted. The argument hash commits to the original arguments, so a reviewer can prove what was decided without keeping a raw secret in the log. Admin tokens are org-scoped; single-tenant mode maps `KEYWARDEN_ADMIN_TOKEN` to the default organization.
 
 ## Demo mode
 

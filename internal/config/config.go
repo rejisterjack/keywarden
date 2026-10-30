@@ -25,9 +25,10 @@ type Config struct {
 	FixtureAddr string
 	FixtureURL  string
 	PublicURL   string
-	Seed        bool
-	DemoLock    bool
-	OrdersDSN   string
+	Seed         bool
+	DemoLock     bool
+	OrdersDSN    string
+	SingleTenant bool
 }
 
 // Load reads configuration from the environment. A local .env file fills in
@@ -45,9 +46,10 @@ func Load() (Config, error) {
 		MCPRate:     envFloat("KEYWARDEN_MCP_RPS", 30),
 		MCPBurst:    envFloat("KEYWARDEN_MCP_BURST", 60),
 		FixtureAddr: envDefault("KEYWARDEN_FIXTURE_ADDR", ""),
-		Seed:        envBool("KEYWARDEN_SEED"),
-		DemoLock:    envBool("KEYWARDEN_DEMO_LOCK"),
-		OrdersDSN:   strings.TrimSpace(os.Getenv("KEYWARDEN_ORDERS_DSN")),
+		Seed:         envBool("KEYWARDEN_SEED"),
+		DemoLock:     envBool("KEYWARDEN_DEMO_LOCK"),
+		OrdersDSN:    strings.TrimSpace(os.Getenv("KEYWARDEN_ORDERS_DSN")),
+		SingleTenant: envBoolDefault("KEYWARDEN_SINGLE_TENANT", true),
 	}
 	cfg.PublicURL = strings.TrimRight(envDefault("KEYWARDEN_PUBLIC_URL", defaultPublicURL(cfg.HTTPAddr)), "/")
 	if v := strings.TrimSpace(os.Getenv("KEYWARDEN_FIXTURE_URL")); v != "" {
@@ -112,6 +114,22 @@ func envBool(key string) bool {
 		return true
 	default:
 		return false
+	}
+}
+
+// envBoolDefault treats an unset variable as def; an explicit falsey value wins.
+func envBoolDefault(key string, def bool) bool {
+	raw := strings.TrimSpace(os.Getenv(key))
+	if raw == "" {
+		return def
+	}
+	switch strings.ToLower(raw) {
+	case "1", "true", "yes", "on":
+		return true
+	case "0", "false", "no", "off":
+		return false
+	default:
+		return def
 	}
 }
 

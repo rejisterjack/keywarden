@@ -13,10 +13,15 @@ import (
 
 // Secret is the sealed JSON stored for a tool. It is never returned by the API.
 type Secret struct {
-	KWDemo  string            `json:"kw_demo,omitempty"`
-	DSN     string            `json:"dsn,omitempty"`
-	Headers map[string]string `json:"headers,omitempty"`
-	Env     map[string]string `json:"env,omitempty"`
+	KWDemo          string            `json:"kw_demo,omitempty"`
+	DSN             string            `json:"dsn,omitempty"`
+	Headers         map[string]string `json:"headers,omitempty"`
+	Env             map[string]string `json:"env,omitempty"`
+	AccessKeyID     string            `json:"access_key_id,omitempty"`
+	SecretAccessKey string            `json:"secret_access_key,omitempty"`
+	SessionToken    string            `json:"session_token,omitempty"`
+	RoleArn         string            `json:"role_arn,omitempty"`
+	ExternalID      string            `json:"external_id,omitempty"`
 }
 
 // HTTPConfig is the public configuration of an mcp_http tool.
@@ -33,6 +38,13 @@ type PostgresConfig struct {
 type StdioConfig struct {
 	Command string   `json:"command"`
 	Args    []string `json:"args,omitempty"`
+}
+
+// PlainHTTPConfig is the public configuration of an http tool.
+type PlainHTTPConfig struct {
+	BaseURL        string   `json:"base_url"`
+	AllowedMethods []string `json:"allowed_methods,omitempty"`
+	PathPrefix     string   `json:"path_prefix,omitempty"`
 }
 
 var (
@@ -81,6 +93,16 @@ func Validate(kind string, config, secretRaw []byte, demo bool, fixtureURL, orde
 			return fail.New(400, "stdio tools are disabled in demo mode")
 		}
 		return validateStdio(config, sec)
+	case "http":
+		if demo {
+			return fail.New(400, "http tools are disabled in demo mode")
+		}
+		return validatePlainHTTP(config, sec)
+	case "aws_http":
+		if demo {
+			return fail.New(400, "aws tools are disabled in demo mode")
+		}
+		return ValidateAWS(config, sec)
 	default:
 		return fail.New(400, "unknown tool kind")
 	}
@@ -183,6 +205,17 @@ func decodeConfig(raw []byte, dst any) error {
 		return fail.New(400, "config must be a JSON object")
 	}
 	return nil
+}
+
+// strictDecoder decodes one JSON object and rejects unknown fields.
+func strictDecoder(raw []byte) *json.Decoder {
+	dec := json.NewDecoder(bytes.NewReader(raw))
+	dec.DisallowUnknownFields()
+	return dec
+}
+
+func jsonMarshal(v any) ([]byte, error) {
+	return json.Marshal(v)
 }
 
 func sameEndpoint(a, b string) bool {

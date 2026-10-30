@@ -12,7 +12,7 @@ No matching rule means deny. A rule you wrote as `allow` will allow the call, in
 
 ## A stolen admin token approves calls
 
-The dashboard password and `KEYWARDEN_ADMIN_TOKEN` are the human gate. Keywarden is not an identity provider. Put the proxy on a private network, and do not publish the admin token.
+The dashboard password and the org admin token (`KEYWARDEN_ADMIN_TOKEN` in single-tenant mode, or a per-org `kwa_…` token) are the human gate. Keywarden is not an identity provider. Put the proxy on a private network, and do not publish admin tokens. Org isolation is enforced in the store; a token for org A cannot read or decide org B's approvals.
 
 ## Approvals are for one call
 
@@ -28,4 +28,4 @@ The hosted demo refuses secrets that are not part of the seeded fictional set, a
 
 ## Out of scope
 
-Keywarden is not a secrets manager for the rest of your company, a SIEM, or a replacement for cloud IAM. An OPA-style policy engine can sit behind the current evaluator later. It is not in this version. Generic HTTP proxies and per-cloud IAM integrations are not in this version either.
+Keywarden is not a secrets manager for the rest of your company, a SIEM, or a replacement for cloud IAM. The rego policy engine covers the same decision vocabulary as the rules evaluator; it does not bring the wider OPA ecosystem (bundles, sidecars, data APIs) with it. The `http` and `aws_http` tool kinds cover ordinary HTTPS and SigV4-signed AWS calls; they are not a general IAM control plane, and GCP/Azure connectors are not included.

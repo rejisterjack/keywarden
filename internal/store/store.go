@@ -26,22 +26,25 @@ const (
 
 // Options opens a store against one deployment.
 type Options struct {
-	DatabaseURL string
-	Vault       *vault.Vault
-	Demo        bool
-	AllowStdio  bool
-	FixtureURL  string
-	OrdersDSN   string
+	DatabaseURL  string
+	Vault        *vault.Vault
+	Demo         bool
+	AllowStdio   bool
+	FixtureURL   string
+	OrdersDSN    string
+	SingleTenant bool
 }
 
 // Store is the Postgres control plane.
 type Store struct {
-	pool       *pgxpool.Pool
-	vault      *vault.Vault
-	demo       bool
-	allowStdio bool
-	fixtureURL string
-	ordersDSN  string
+	pool         *pgxpool.Pool
+	vault        *vault.Vault
+	demo         bool
+	allowStdio   bool
+	fixtureURL   string
+	ordersDSN    string
+	singleTenant bool
+	defaultOrgID uuid.UUID
 }
 
 // Open connects and checks the database.
@@ -65,12 +68,14 @@ func Open(ctx context.Context, opt Options) (*Store, error) {
 		return nil, err
 	}
 	return &Store{
-		pool:       pool,
-		vault:      opt.Vault,
-		demo:       opt.Demo,
-		allowStdio: opt.AllowStdio,
-		fixtureURL: opt.FixtureURL,
-		ordersDSN:  opt.OrdersDSN,
+		pool:         pool,
+		vault:        opt.Vault,
+		demo:         opt.Demo,
+		allowStdio:   opt.AllowStdio,
+		fixtureURL:   opt.FixtureURL,
+		ordersDSN:    opt.OrdersDSN,
+		singleTenant: opt.SingleTenant,
+		defaultOrgID: DefaultOrgID,
 	}, nil
 }
 
@@ -82,6 +87,10 @@ func (s *Store) Ping(ctx context.Context) error { return s.pool.Ping(ctx) }
 
 // CreateAgent inserts an agent. The id is the policy match key.
 func (s *Store) CreateAgent(ctx context.Context, id, name string) (Agent, error) {
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return Agent{}, err
+	}
 	if !slug.OK(id) {
 		return Agent{}, fail.New(400, "agent id must be a lowercase slug")
 	}
@@ -89,9 +98,9 @@ func (s *Store) CreateAgent(ctx context.Context, id, name string) (Agent, error)
 		return Agent{}, fail.New(400, "agent name is required")
 	}
 	var a Agent
-	err := s.pool.QueryRow(ctx, `
-		INSERT INTO agents (id, name) VALUES ($1, $2)
-		RETURNING id, name, created_at`, id, name).Scan(&a.ID, &a.Name, &a.CreatedAt)
+	err = s.pool.QueryRow(ctx, `
+		INSERT INTO agents (org_id, id, name) VALUES ($1, $2, $3)
+		RETURNING id, name, created_at`, orgID, id, name).Scan(&a.ID, &a.Name, &a.CreatedAt)
 	if err != nil {
 		return Agent{}, mapWrite(err, "agent already exists")
 	}
@@ -101,9 +110,13 @@ func (s *Store) CreateAgent(ctx context.Context, id, name string) (Agent, error)
 	return a, nil
 }
 
-// ListAgents returns every agent.
+// ListAgents returns every agent in the active organization.
 func (s *Store) ListAgents(ctx context.Context) ([]Agent, error) {
-	rows, err := s.pool.Query(ctx, `SELECT id, name, created_at FROM agents ORDER BY id`)
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := s.pool.Query(ctx, `SELECT id, name, created_at FROM agents WHERE org_id = $1 ORDER BY id`, orgID)
 	if err != nil {
 		return nil, err
 	}
@@ -121,8 +134,12 @@ func (s *Store) ListAgents(ctx context.Context) ([]Agent, error) {
 
 // GetAgent loads one agent.
 func (s *Store) GetAgent(ctx context.Context, id string) (Agent, error) {
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return Agent{}, err
+	}
 	var a Agent
-	err := s.pool.QueryRow(ctx, `SELECT id, name, created_at FROM agents WHERE id = $1`, id).Scan(&a.ID, &a.Name, &a.CreatedAt)
+	err = s.pool.QueryRow(ctx, `SELECT id, name, created_at FROM agents WHERE org_id = $1 AND id = $2`, orgID, id).Scan(&a.ID, &a.Name, &a.CreatedAt)
 	if err != nil {
 		return Agent{}, mapRead(err, "agent not found")
 	}
@@ -131,7 +148,11 @@ func (s *Store) GetAgent(ctx context.Context, id string) (Agent, error) {
 
 // DeleteAgent removes an agent that has no tasks.
 func (s *Store) DeleteAgent(ctx context.Context, id string) error {
-	tag, err := s.pool.Exec(ctx, `DELETE FROM agents WHERE id = $1`, id)
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return err
+	}
+	tag, err := s.pool.Exec(ctx, `DELETE FROM agents WHERE org_id = $1 AND id = $2`, orgID, id)
 	if err != nil {
 		return mapWrite(err, "agent is still referenced")
 	}
@@ -153,6 +174,10 @@ type CreateToolInput struct {
 
 // CreateTool seals the secret and stores the tool. The secret is not returned.
 func (s *Store) CreateTool(ctx context.Context, in CreateToolInput) (ToolPublic, error) {
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return ToolPublic{}, err
+	}
 	if !slug.OK(in.ID) {
 		return ToolPublic{}, fail.New(400, "tool id must be a lowercase slug")
 	}
@@ -175,10 +200,10 @@ func (s *Store) CreateTool(ctx context.Context, in CreateToolInput) (ToolPublic,
 	var pub ToolPublic
 	var cfg []byte
 	err = s.pool.QueryRow(ctx, `
-		INSERT INTO tools (id, name, kind, config, secret_ciphertext, secret_nonce, seeded)
-		VALUES ($1, $2, $3, $4::jsonb, $5, $6, $7)
+		INSERT INTO tools (org_id, id, name, kind, config, secret_ciphertext, secret_nonce, seeded)
+		VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8)
 		RETURNING id, name, kind, config, seeded, created_at`,
-		in.ID, in.Name, in.Kind, string(in.Config), ct, nonce, in.Seeded,
+		orgID, in.ID, in.Name, in.Kind, string(in.Config), ct, nonce, in.Seeded,
 	).Scan(&pub.ID, &pub.Name, &pub.Kind, &cfg, &pub.Seeded, &pub.CreatedAt)
 	if err != nil {
 		return ToolPublic{}, mapWrite(err, "tool already exists")
@@ -197,7 +222,11 @@ func (s *Store) CreateTool(ctx context.Context, in CreateToolInput) (ToolPublic,
 
 // ListTools returns tools without secrets.
 func (s *Store) ListTools(ctx context.Context) ([]ToolPublic, error) {
-	rows, err := s.pool.Query(ctx, `SELECT id, name, kind, config, seeded, created_at FROM tools ORDER BY id`)
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := s.pool.Query(ctx, `SELECT id, name, kind, config, seeded, created_at FROM tools WHERE org_id = $1 ORDER BY id`, orgID)
 	if err != nil {
 		return nil, err
 	}
@@ -215,11 +244,15 @@ func (s *Store) ListTools(ctx context.Context) ([]ToolPublic, error) {
 
 // GetTool loads a tool, including the sealed secret for proxy use.
 func (s *Store) GetTool(ctx context.Context, id string) (Tool, error) {
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return Tool{}, err
+	}
 	var tool Tool
 	var cfg []byte
-	err := s.pool.QueryRow(ctx, `
+	err = s.pool.QueryRow(ctx, `
 		SELECT id, name, kind, config, secret_ciphertext, secret_nonce, seeded, created_at
-		FROM tools WHERE id = $1`, id).Scan(
+		FROM tools WHERE org_id = $1 AND id = $2`, orgID, id).Scan(
 		&tool.ID, &tool.Name, &tool.Kind, &cfg, &tool.Ciphertext, &tool.Nonce, &tool.Seeded, &tool.CreatedAt)
 	if err != nil {
 		return Tool{}, mapRead(err, "tool not found")
@@ -230,9 +263,13 @@ func (s *Store) GetTool(ctx context.Context, id string) (Tool, error) {
 
 // DeleteTool removes a tool. Seeded demo tools stay in place.
 func (s *Store) DeleteTool(ctx context.Context, id string) error {
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return err
+	}
 	if s.demo {
 		var seeded bool
-		err := s.pool.QueryRow(ctx, `SELECT seeded FROM tools WHERE id = $1`, id).Scan(&seeded)
+		err := s.pool.QueryRow(ctx, `SELECT seeded FROM tools WHERE org_id = $1 AND id = $2`, orgID, id).Scan(&seeded)
 		if err != nil {
 			return mapRead(err, "tool not found")
 		}
@@ -240,7 +277,7 @@ func (s *Store) DeleteTool(ctx context.Context, id string) error {
 			return fail.New(403, "seeded demo tools cannot be deleted")
 		}
 	}
-	tag, err := s.pool.Exec(ctx, `DELETE FROM tools WHERE id = $1`, id)
+	tag, err := s.pool.Exec(ctx, `DELETE FROM tools WHERE org_id = $1 AND id = $2`, orgID, id)
 	if err != nil {
 		return mapWrite(err, "tool is still referenced")
 	}
@@ -267,7 +304,9 @@ func (s *Store) AssertDemoSecrets(ctx context.Context) error {
 	if !s.demo {
 		return nil
 	}
-	rows, err := s.pool.Query(ctx, `SELECT id, name, kind, config, secret_ciphertext, secret_nonce, seeded, created_at FROM tools`)
+	rows, err := s.pool.Query(ctx, `
+		SELECT id, name, kind, config, secret_ciphertext, secret_nonce, seeded, created_at
+		FROM tools`)
 	if err != nil {
 		return err
 	}
@@ -288,6 +327,10 @@ func (s *Store) AssertDemoSecrets(ctx context.Context) error {
 
 // ApplyPolicy stores a new active version and retires the previous one.
 func (s *Store) ApplyPolicy(ctx context.Context, raw []byte) (Policy, error) {
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return Policy{}, err
+	}
 	doc, canon, err := policy.Parse(raw)
 	if err != nil {
 		return Policy{}, fail.New(400, err.Error())
@@ -297,20 +340,20 @@ func (s *Store) ApplyPolicy(ctx context.Context, raw []byte) (Policy, error) {
 		return Policy{}, err
 	}
 	defer tx.Rollback(ctx)
-	if _, err := tx.Exec(ctx, `UPDATE policies SET active = false WHERE active`); err != nil {
+	if _, err := tx.Exec(ctx, `UPDATE policies SET active = false WHERE org_id = $1 AND active`, orgID); err != nil {
 		return Policy{}, err
 	}
 	var version int
-	if err := tx.QueryRow(ctx, `SELECT coalesce(max(version), 0) + 1 FROM policies`).Scan(&version); err != nil {
+	if err := tx.QueryRow(ctx, `SELECT coalesce(max(version), 0) + 1 FROM policies WHERE org_id = $1`, orgID).Scan(&version); err != nil {
 		return Policy{}, err
 	}
 	var p Policy
 	var document string
 	err = tx.QueryRow(ctx, `
-		INSERT INTO policies (id, version, document, active)
-		VALUES ($1, $2, $3::jsonb, true)
+		INSERT INTO policies (id, org_id, version, document, active)
+		VALUES ($1, $2, $3, $4::jsonb, true)
 		RETURNING id, version, document, active, created_at`,
-		uuid.New(), version, string(canon),
+		uuid.New(), orgID, version, string(canon),
 	).Scan(&p.ID, &p.Version, &document, &p.Active, &p.CreatedAt)
 	if err != nil {
 		return Policy{}, err
@@ -320,7 +363,7 @@ func (s *Store) ApplyPolicy(ctx context.Context, raw []byte) (Policy, error) {
 	if err := json.Unmarshal(canon, &decoded); err != nil {
 		return Policy{}, err
 	}
-	if err := appendAuditTx(ctx, tx, "policy.applied", map[string]any{
+	if err := s.appendAuditTx(ctx, tx, "policy.applied", map[string]any{
 		"policy_id": p.ID.String(),
 		"version":   version,
 		"document":  decoded,
@@ -336,11 +379,15 @@ func (s *Store) ApplyPolicy(ctx context.Context, raw []byte) (Policy, error) {
 
 // ActivePolicy returns the current document.
 func (s *Store) ActivePolicy(ctx context.Context) (Policy, error) {
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return Policy{}, err
+	}
 	var p Policy
 	var document string
-	err := s.pool.QueryRow(ctx, `
+	err = s.pool.QueryRow(ctx, `
 		SELECT id, version, document, active, created_at
-		FROM policies WHERE active`).Scan(&p.ID, &p.Version, &document, &p.Active, &p.CreatedAt)
+		FROM policies WHERE org_id = $1 AND active`, orgID).Scan(&p.ID, &p.Version, &document, &p.Active, &p.CreatedAt)
 	if err != nil {
 		return Policy{}, mapRead(err, "no active policy")
 	}
@@ -366,9 +413,13 @@ func (s *Store) ActiveDocument(ctx context.Context) (policy.Document, error) {
 
 // ListPolicies returns versions, newest first.
 func (s *Store) ListPolicies(ctx context.Context) ([]Policy, error) {
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return nil, err
+	}
 	rows, err := s.pool.Query(ctx, `
 		SELECT id, version, document, active, created_at
-		FROM policies ORDER BY version DESC`)
+		FROM policies WHERE org_id = $1 ORDER BY version DESC`, orgID)
 	if err != nil {
 		return nil, err
 	}
@@ -421,14 +472,18 @@ func (s *Store) IssueTask(ctx context.Context, agentID string, toolIDs []string,
 		text := string(b)
 		encoded = &text
 	}
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return Task{}, "", err
+	}
 	var task Task
 	var tools []byte
 	err = s.pool.QueryRow(ctx, `
-		INSERT INTO tasks (id, agent_id, token_hash, tool_ids, expires_at)
-		VALUES ($1, $2, $3, $4::jsonb, $5)
-		RETURNING id, agent_id, tool_ids, expires_at, revoked_at, created_at`,
-		uuid.New(), agentID, hash, encoded, time.Now().UTC().Add(ttl),
-	).Scan(&task.ID, &task.AgentID, &tools, &task.ExpiresAt, &task.RevokedAt, &task.CreatedAt)
+		INSERT INTO tasks (id, org_id, agent_id, token_hash, tool_ids, expires_at)
+		VALUES ($1, $2, $3, $4, $5::jsonb, $6)
+		RETURNING id, agent_id, tool_ids, expires_at, revoked_at, created_at, org_id`,
+		uuid.New(), orgID, agentID, hash, encoded, time.Now().UTC().Add(ttl),
+	).Scan(&task.ID, &task.AgentID, &tools, &task.ExpiresAt, &task.RevokedAt, &task.CreatedAt, &task.OrgID)
 	if err != nil {
 		return Task{}, "", err
 	}
@@ -453,9 +508,13 @@ func (s *Store) IssueTask(ctx context.Context, agentID string, toolIDs []string,
 
 // ListTasks returns tasks without token hashes.
 func (s *Store) ListTasks(ctx context.Context) ([]Task, error) {
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return nil, err
+	}
 	rows, err := s.pool.Query(ctx, `
-		SELECT id, agent_id, tool_ids, expires_at, revoked_at, created_at
-		FROM tasks ORDER BY created_at DESC LIMIT 200`)
+		SELECT id, agent_id, tool_ids, expires_at, revoked_at, created_at, org_id
+		FROM tasks WHERE org_id = $1 ORDER BY created_at DESC LIMIT 200`, orgID)
 	if err != nil {
 		return nil, err
 	}
@@ -473,15 +532,19 @@ func (s *Store) ListTasks(ctx context.Context) ([]Task, error) {
 
 // RevokeTask invalidates a task immediately.
 func (s *Store) RevokeTask(ctx context.Context, id uuid.UUID) error {
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return err
+	}
 	tag, err := s.pool.Exec(ctx, `
 		UPDATE tasks SET revoked_at = now()
-		WHERE id = $1 AND revoked_at IS NULL`, id)
+		WHERE org_id = $1 AND id = $2 AND revoked_at IS NULL`, orgID, id)
 	if err != nil {
 		return err
 	}
 	if tag.RowsAffected() == 0 {
 		var exists bool
-		if err := s.pool.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM tasks WHERE id = $1)`, id).Scan(&exists); err != nil {
+		if err := s.pool.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM tasks WHERE org_id = $1 AND id = $2)`, orgID, id).Scan(&exists); err != nil {
 			return err
 		}
 		if !exists {
@@ -501,9 +564,9 @@ func (s *Store) Authenticate(ctx context.Context, raw string) (Task, error) {
 	var task Task
 	var tools []byte
 	err = s.pool.QueryRow(ctx, `
-		SELECT id, agent_id, tool_ids, expires_at, revoked_at, created_at
+		SELECT id, agent_id, tool_ids, expires_at, revoked_at, created_at, org_id
 		FROM tasks WHERE token_hash = $1`, hash).Scan(
-		&task.ID, &task.AgentID, &tools, &task.ExpiresAt, &task.RevokedAt, &task.CreatedAt)
+		&task.ID, &task.AgentID, &tools, &task.ExpiresAt, &task.RevokedAt, &task.CreatedAt, &task.OrgID)
 	if err != nil {
 		return Task{}, fail.New(401, "unauthorized")
 	}
@@ -532,7 +595,7 @@ func (t Task) Allows(toolID string) bool {
 func scanTask(row pgx.Row) (Task, error) {
 	var task Task
 	var tools []byte
-	if err := row.Scan(&task.ID, &task.AgentID, &tools, &task.ExpiresAt, &task.RevokedAt, &task.CreatedAt); err != nil {
+	if err := row.Scan(&task.ID, &task.AgentID, &tools, &task.ExpiresAt, &task.RevokedAt, &task.CreatedAt, &task.OrgID); err != nil {
 		return Task{}, err
 	}
 	if err := decodeTools(tools, &task); err != nil {

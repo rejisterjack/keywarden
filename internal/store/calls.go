@@ -35,11 +35,11 @@ func (s *Store) RecordCall(ctx context.Context, in CallInput) (Call, error) {
 		return Call{}, err
 	}
 	defer tx.Rollback(ctx)
-	call, err := insertCall(ctx, tx, in, nil)
+	call, err := s.insertCall(ctx, tx, in, nil)
 	if err != nil {
 		return Call{}, err
 	}
-	if err := appendAuditTx(ctx, tx, in.AuditType, in.Audit); err != nil {
+	if err := s.appendAuditTx(ctx, tx, in.AuditType, in.Audit); err != nil {
 		return Call{}, err
 	}
 	if err := tx.Commit(ctx); err != nil {
@@ -61,17 +61,21 @@ func (s *Store) RecordPending(ctx context.Context, in CallInput, timeout time.Du
 	in.Decision = "pending"
 	in.UpstreamStatus = ""
 	approvalID := uuid.New()
-	call, err := insertCall(ctx, tx, in, &approvalID)
+	call, err := s.insertCall(ctx, tx, in, &approvalID)
+	if err != nil {
+		return Call{}, Approval{}, err
+	}
+	orgID, err := s.org(ctx)
 	if err != nil {
 		return Call{}, Approval{}, err
 	}
 	var approval Approval
 	expires := time.Now().UTC().Add(timeout)
 	err = tx.QueryRow(ctx, `
-		INSERT INTO approvals (id, tool_call_id, args_hash, status, expires_at)
-		VALUES ($1, $2, $3, 'pending', $4)
+		INSERT INTO approvals (id, org_id, tool_call_id, args_hash, status, expires_at)
+		VALUES ($1, $2, $3, $4, 'pending', $5)
 		RETURNING id, tool_call_id, args_hash, status, decided_by, comment, decided_at, expires_at, created_at`,
-		approvalID, call.ID, in.ArgsHash, expires,
+		approvalID, orgID, call.ID, in.ArgsHash, expires,
 	).Scan(&approval.ID, &approval.ToolCallID, &approval.ArgsHash, &approval.Status, &approval.DecidedBy, &approval.Comment, &approval.DecidedAt, &approval.ExpiresAt, &approval.CreatedAt)
 	if err != nil {
 		return Call{}, Approval{}, err
@@ -81,7 +85,7 @@ func (s *Store) RecordPending(ctx context.Context, in CallInput, timeout time.Du
 	}
 	in.Audit["approval_id"] = approval.ID.String()
 	in.Audit["expires_at"] = approval.ExpiresAt.UTC().Format(time.RFC3339Nano)
-	if err := appendAuditTx(ctx, tx, "tool_call.pending", in.Audit); err != nil {
+	if err := s.appendAuditTx(ctx, tx, "tool_call.pending", in.Audit); err != nil {
 		return Call{}, Approval{}, err
 	}
 	if err := tx.Commit(ctx); err != nil {
@@ -91,18 +95,22 @@ func (s *Store) RecordPending(ctx context.Context, in CallInput, timeout time.Du
 	return call, approval, nil
 }
 
-func insertCall(ctx context.Context, tx pgx.Tx, in CallInput, approvalID *uuid.UUID) (Call, error) {
+func (s *Store) insertCall(ctx context.Context, tx pgx.Tx, in CallInput, approvalID *uuid.UUID) (Call, error) {
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return Call{}, err
+	}
 	var call Call
-	err := tx.QueryRow(ctx, `
+	err = tx.QueryRow(ctx, `
 		INSERT INTO tool_calls (
-			id, task_id, agent_id, tool_id, mcp_tool_name, args_redacted, args_hash,
+			id, org_id, task_id, agent_id, tool_id, mcp_tool_name, args_redacted, args_hash,
 			decision, policy_rule_id, reason, approval_id, request_id, upstream_status
 		) VALUES (
-			$1, $2, $3, $4, $5, $6::jsonb, $7,
-			$8, $9, $10, $11, $12, $13
+			$1, $2, $3, $4, $5, $6, $7::jsonb, $8,
+			$9, $10, $11, $12, $13, $14
 		) RETURNING id, task_id, agent_id, tool_id, mcp_tool_name, args_redacted, args_hash,
 			decision, policy_rule_id, reason, approval_id, request_id, upstream_status, created_at`,
-		uuid.New(), in.TaskID, in.AgentID, in.ToolID, in.MCPToolName, string(in.ArgsRedacted), in.ArgsHash,
+		uuid.New(), orgID, in.TaskID, in.AgentID, in.ToolID, in.MCPToolName, string(in.ArgsRedacted), in.ArgsHash,
 		in.Decision, in.RuleID, in.Reason, approvalID, in.RequestID, in.UpstreamStatus,
 	).Scan(
 		&call.ID, &call.TaskID, &call.AgentID, &call.ToolID, &call.MCPToolName, &call.ArgsRedacted, &call.ArgsHash,
@@ -137,7 +145,7 @@ func (s *Store) FinishCall(ctx context.Context, id uuid.UUID, upstream, auditTyp
 		UPDATE tool_calls SET upstream_status = $2, updated_at = now() WHERE id = $1`, id, upstream); err != nil {
 		return err
 	}
-	if err := appendAuditTx(ctx, tx, auditType, payload); err != nil {
+	if err := s.appendAuditTx(ctx, tx, auditType, payload); err != nil {
 		return err
 	}
 	return tx.Commit(ctx)
@@ -145,10 +153,14 @@ func (s *Store) FinishCall(ctx context.Context, id uuid.UUID, upstream, auditTyp
 
 // GetApproval loads one approval.
 func (s *Store) GetApproval(ctx context.Context, id uuid.UUID) (Approval, error) {
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return Approval{}, err
+	}
 	var a Approval
-	err := s.pool.QueryRow(ctx, `
+	err = s.pool.QueryRow(ctx, `
 		SELECT id, tool_call_id, args_hash, status, decided_by, comment, decided_at, expires_at, created_at
-		FROM approvals WHERE id = $1`, id).Scan(
+		FROM approvals WHERE org_id = $1 AND id = $2`, orgID, id).Scan(
 		&a.ID, &a.ToolCallID, &a.ArgsHash, &a.Status, &a.DecidedBy, &a.Comment, &a.DecidedAt, &a.ExpiresAt, &a.CreatedAt)
 	if err != nil {
 		return Approval{}, mapRead(err, "approval not found")
@@ -158,16 +170,20 @@ func (s *Store) GetApproval(ctx context.Context, id uuid.UUID) (Approval, error)
 
 // ListApprovals returns reviewer rows. An empty status returns every state.
 func (s *Store) ListApprovals(ctx context.Context, status string) ([]ApprovalView, error) {
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return nil, err
+	}
 	rows, err := s.pool.Query(ctx, `
 		SELECT a.id, a.tool_call_id, a.status, a.comment, a.decided_by, a.expires_at, a.decided_at, a.created_at,
 			c.agent_id, c.tool_id, coalesce(t.name, c.tool_id), c.args_redacted, encode(c.args_hash, 'hex'),
 			c.policy_rule_id, c.reason, c.request_id, c.decision
 		FROM approvals a
 		JOIN tool_calls c ON c.id = a.tool_call_id
-		LEFT JOIN tools t ON t.id = c.tool_id
-		WHERE ($1 = '' OR a.status = $1)
+		LEFT JOIN tools t ON t.org_id = a.org_id AND t.id = c.tool_id
+		WHERE a.org_id = $1 AND ($2 = '' OR a.status = $2)
 		ORDER BY a.created_at DESC
-		LIMIT 200`, status)
+		LIMIT 200`, orgID, status)
 	if err != nil {
 		return nil, err
 	}
@@ -201,6 +217,10 @@ func (s *Store) Decide(ctx context.Context, id uuid.UUID, approve bool, comment,
 		want = "approved"
 		callDecision = "approved"
 	}
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return Approval{}, err
+	}
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return Approval{}, err
@@ -209,7 +229,7 @@ func (s *Store) Decide(ctx context.Context, id uuid.UUID, approve bool, comment,
 	var current Approval
 	err = tx.QueryRow(ctx, `
 		SELECT id, tool_call_id, args_hash, status, decided_by, comment, decided_at, expires_at, created_at
-		FROM approvals WHERE id = $1 FOR UPDATE`, id).Scan(
+		FROM approvals WHERE org_id = $1 AND id = $2 FOR UPDATE`, orgID, id).Scan(
 		&current.ID, &current.ToolCallID, &current.ArgsHash, &current.Status, &current.DecidedBy, &current.Comment, &current.DecidedAt, &current.ExpiresAt, &current.CreatedAt)
 	if err != nil {
 		return Approval{}, mapRead(err, "approval not found")
@@ -221,7 +241,7 @@ func (s *Store) Decide(ctx context.Context, id uuid.UUID, approve bool, comment,
 		return Approval{}, fail.New(409, "approval is already "+current.Status)
 	}
 	if !time.Now().Before(current.ExpiresAt) {
-		if err := expireTx(ctx, tx, current, "deadline passed"); err != nil {
+		if err := expireTx(ctx, tx, orgID, current, "deadline passed"); err != nil {
 			return Approval{}, err
 		}
 		if err := tx.Commit(ctx); err != nil {
@@ -252,7 +272,7 @@ func (s *Store) Decide(ctx context.Context, id uuid.UUID, approve bool, comment,
 		current.ToolCallID, callDecision); err != nil {
 		return Approval{}, err
 	}
-	if err := appendAuditTx(ctx, tx, "approval.decided", map[string]any{
+	if err := s.appendAuditTx(ctx, tx, "approval.decided", map[string]any{
 		"approval_id":  current.ID.String(),
 		"tool_call_id": current.ToolCallID.String(),
 		"status":       current.Status,
@@ -270,6 +290,7 @@ func (s *Store) Decide(ctx context.Context, id uuid.UUID, approve bool, comment,
 
 // ExpireApproval marks a pending approval expired and returns the resulting status.
 // If the approval was already decided, that status is returned and nothing is forwarded.
+// Org is taken from the tool_call so background waiters need no org context.
 func (s *Store) ExpireApproval(ctx context.Context, id uuid.UUID, reason string) (string, error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -277,17 +298,20 @@ func (s *Store) ExpireApproval(ctx context.Context, id uuid.UUID, reason string)
 	}
 	defer tx.Rollback(ctx)
 	var current Approval
+	var orgID uuid.UUID
 	err = tx.QueryRow(ctx, `
-		SELECT id, tool_call_id, args_hash, status, decided_by, comment, decided_at, expires_at, created_at
-		FROM approvals WHERE id = $1 FOR UPDATE`, id).Scan(
-		&current.ID, &current.ToolCallID, &current.ArgsHash, &current.Status, &current.DecidedBy, &current.Comment, &current.DecidedAt, &current.ExpiresAt, &current.CreatedAt)
+		SELECT a.id, a.tool_call_id, a.args_hash, a.status, a.decided_by, a.comment, a.decided_at, a.expires_at, a.created_at, c.org_id
+		FROM approvals a
+		JOIN tool_calls c ON c.id = a.tool_call_id
+		WHERE a.id = $1 FOR UPDATE OF a`, id).Scan(
+		&current.ID, &current.ToolCallID, &current.ArgsHash, &current.Status, &current.DecidedBy, &current.Comment, &current.DecidedAt, &current.ExpiresAt, &current.CreatedAt, &orgID)
 	if err != nil {
 		return "", mapRead(err, "approval not found")
 	}
 	if current.Status != "pending" {
 		return current.Status, nil
 	}
-	if err := expireTx(ctx, tx, current, reason); err != nil {
+	if err := expireTx(ctx, tx, orgID, current, reason); err != nil {
 		return "", err
 	}
 	if err := tx.Commit(ctx); err != nil {
@@ -296,7 +320,7 @@ func (s *Store) ExpireApproval(ctx context.Context, id uuid.UUID, reason string)
 	return "expired", nil
 }
 
-func expireTx(ctx context.Context, tx pgx.Tx, current Approval, reason string) error {
+func expireTx(ctx context.Context, tx pgx.Tx, orgID uuid.UUID, current Approval, reason string) error {
 	if _, err := tx.Exec(ctx, `
 		UPDATE approvals SET status = 'expired', decided_at = now() WHERE id = $1 AND status = 'pending'`, current.ID); err != nil {
 		return err
@@ -306,7 +330,7 @@ func expireTx(ctx context.Context, tx pgx.Tx, current Approval, reason string) e
 		WHERE id = $1 AND decision = 'pending'`, current.ToolCallID); err != nil {
 		return err
 	}
-	return appendAuditTx(ctx, tx, "approval.expired", map[string]any{
+	return appendAuditInOrg(ctx, tx, orgID, "approval.expired", map[string]any{
 		"approval_id":  current.ID.String(),
 		"tool_call_id": current.ToolCallID.String(),
 		"reason":       reason,
@@ -315,7 +339,7 @@ func expireTx(ctx context.Context, tx pgx.Tx, current Approval, reason string) e
 }
 
 // InterruptInFlight expires work a previous process can no longer finish.
-// It never forwards those calls.
+// It never forwards those calls. Runs across all orgs at process start.
 func (s *Store) InterruptInFlight(ctx context.Context) (int, error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -323,7 +347,7 @@ func (s *Store) InterruptInFlight(ctx context.Context) (int, error) {
 	}
 	defer tx.Rollback(ctx)
 	rows, err := tx.Query(ctx, `
-		SELECT c.id, c.decision, a.id
+		SELECT c.id, c.org_id, c.decision, a.id
 		FROM tool_calls c
 		LEFT JOIN approvals a ON a.tool_call_id = c.id
 		WHERE c.decision = 'pending'
@@ -334,13 +358,14 @@ func (s *Store) InterruptInFlight(ctx context.Context) (int, error) {
 	}
 	type item struct {
 		callID     uuid.UUID
+		orgID      uuid.UUID
 		decision   string
 		approvalID *uuid.UUID
 	}
 	var items []item
 	for rows.Next() {
 		var it item
-		if err := rows.Scan(&it.callID, &it.decision, &it.approvalID); err != nil {
+		if err := rows.Scan(&it.callID, &it.orgID, &it.decision, &it.approvalID); err != nil {
 			rows.Close()
 			return 0, err
 		}
@@ -364,7 +389,7 @@ func (s *Store) InterruptInFlight(ctx context.Context) (int, error) {
 			WHERE id = $1`, it.callID); err != nil {
 			return 0, err
 		}
-		if err := appendAuditTx(ctx, tx, "tool_call.interrupted", map[string]any{
+		if err := appendAuditInOrg(ctx, tx, it.orgID, "tool_call.interrupted", map[string]any{
 			"tool_call_id": it.callID.String(),
 			"was":          it.decision,
 			"reason":       "process restart",

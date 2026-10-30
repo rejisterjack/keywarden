@@ -45,7 +45,7 @@ Keywarden addresses tool calls that flow through a controlled path: scoped acces
 ## Tech stack
 
 - Go (proxy core—small, fast, easy to ship as a single binary)
-- Declarative policy engine (simple rules first; OPA-style extensibility later if needed)
+- Declarative policy engine (ordered JSON rules, with an embedded Rego engine for richer policies)
 - PostgreSQL (policies, approvals)
 - Append-only audit log with hash chaining
 - Web dashboard for approvals and log viewing
@@ -62,7 +62,7 @@ Keywarden addresses tool calls that flow through a controlled path: scoped acces
 
 - Governs traffic that routes through Keywarden; cannot revoke access the agent already has elsewhere
 - Not a full identity provider, SIEM, or secrets manager replacement—focused on agent tool governance
-- Enterprise policy languages and every cloud IAM integration are out of initial scope
+- Not every cloud IAM surface: AWS SigV4/`aws_http` is supported; GCP and Azure connectors are follow-ons
 
 ## Deployment
 

@@ -1,8 +1,6 @@
 package httpapi
 
 import (
-	"crypto/sha256"
-	"crypto/subtle"
 	"encoding/json"
 	"errors"
 	"io"
@@ -80,9 +78,13 @@ func (s *Server) wrap(next http.Handler) http.Handler {
 				return
 			}
 		}
-		if needsAdmin(r.URL.Path) && !authorize(bearer(r), s.Cfg.AdminToken) {
-			writeError(sw, http.StatusUnauthorized, "unauthorized")
-			return
+		if needsAdmin(r.URL.Path) {
+			orgID, err := s.Store.AuthenticateAdmin(r.Context(), bearer(r), s.Cfg.AdminToken)
+			if err != nil {
+				writeError(sw, http.StatusUnauthorized, "unauthorized")
+				return
+			}
+			r = r.WithContext(store.WithOrg(r.Context(), orgID))
 		}
 		if s.locked(r) {
 			writeError(sw, http.StatusForbidden, "the hosted demo does not accept this change")
@@ -132,10 +134,12 @@ func (s *Server) ready(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) meta(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
-		"name":      "keywarden",
-		"version":   version.Version,
-		"demo":      s.Cfg.Demo,
-		"demo_lock": s.Cfg.DemoLock,
+		"name":          "keywarden",
+		"version":       version.Version,
+		"demo":          s.Cfg.Demo,
+		"demo_lock":     s.Cfg.DemoLock,
+		"single_tenant": s.Cfg.SingleTenant,
+		"default_org":   s.Store.DefaultOrg().String(),
 	})
 }
 
@@ -145,7 +149,8 @@ func (s *Server) mcp(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
-	s.Proxy.ServeMCP(w, r.WithContext(proxy.WithTask(r.Context(), task)))
+	ctx := store.WithOrg(r.Context(), task.OrgID)
+	s.Proxy.ServeMCP(w, r.WithContext(proxy.WithTask(ctx, task)))
 }
 
 func (s *Server) listAgents(w http.ResponseWriter, r *http.Request) {
@@ -397,15 +402,6 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 
 func writeError(w http.ResponseWriter, status int, msg string) {
 	writeJSON(w, status, map[string]string{"error": msg})
-}
-
-func authorize(got, want string) bool {
-	if want == "" {
-		return false
-	}
-	g := sha256.Sum256([]byte(got))
-	w := sha256.Sum256([]byte(want))
-	return subtle.ConstantTimeCompare(g[:], w[:]) == 1
 }
 
 func bearer(r *http.Request) string {

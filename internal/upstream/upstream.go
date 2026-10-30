@@ -19,6 +19,8 @@ import (
 type Dispatcher struct {
 	HTTP       *mcp.Client
 	Stdio      mcp.Stdio
+	Plain      PlainHTTP
+	AWS        AWSHTTP
 	Connect    func(ctx context.Context, dsn string) (*pgx.Conn, error)
 	AllowStdio bool
 }
@@ -47,6 +49,10 @@ func (d *Dispatcher) List(ctx context.Context, tool store.Tool, secretRaw []byte
 			return nil, err
 		}
 		return d.Stdio.List(ctx, cfg.Command, cfg.Args, sec.Env)
+	case "http":
+		return d.Plain.List(ctx, tool.Config, secretRaw)
+	case "aws_http":
+		return d.AWS.List(ctx, tool.Config, secretRaw)
 	default:
 		return nil, fail.New(400, "unknown tool kind")
 	}
@@ -83,6 +89,16 @@ func (d *Dispatcher) Call(ctx context.Context, tool store.Tool, secretRaw []byte
 			return "", err
 		}
 		return string(raw), nil
+	case "http":
+		if name != "request" {
+			return "", fail.New(404, "unknown tool")
+		}
+		return d.Plain.Call(ctx, tool.Config, secretRaw, args)
+	case "aws_http":
+		if name != "request" {
+			return "", fail.New(404, "unknown tool")
+		}
+		return d.AWS.Call(ctx, tool.Config, secretRaw, args)
 	default:
 		return "", fail.New(400, "unknown tool kind")
 	}

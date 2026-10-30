@@ -31,6 +31,9 @@ func TestLoadAcceptsVaultKey(t *testing.T) {
 	if !cfg.Demo {
 		t.Fatal("demo flag")
 	}
+	if !cfg.SingleTenant {
+		t.Fatal("single tenant should default on")
+	}
 	if len(cfg.VaultKey) != 32 || cfg.VaultKey[0] != 1 {
 		t.Fatalf("key = %v", cfg.VaultKey)
 	}

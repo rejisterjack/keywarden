@@ -15,6 +15,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/rejisterjack/keywarden/internal/config"
+	"github.com/rejisterjack/keywarden/internal/fail"
 	"github.com/rejisterjack/keywarden/internal/limit"
 	"github.com/rejisterjack/keywarden/internal/logging"
 	"github.com/rejisterjack/keywarden/internal/mcp"
@@ -64,12 +65,13 @@ func newHarness(t *testing.T, demo, lock bool) *harness {
 	orders := dsn
 	fixtureURL := "http://127.0.0.1:9/mcp"
 	st, err := store.Open(ctx, store.Options{
-		DatabaseURL: dsn,
-		Vault:       v,
-		Demo:        demo,
-		AllowStdio:  !demo,
-		FixtureURL:  fixtureURL,
-		OrdersDSN:   orders,
+		DatabaseURL:  dsn,
+		Vault:        v,
+		Demo:         demo,
+		AllowStdio:   !demo,
+		FixtureURL:   fixtureURL,
+		OrdersDSN:    orders,
+		SingleTenant: true,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -100,7 +102,7 @@ func newHarness(t *testing.T, demo, lock bool) *harness {
 			return pgx.Connect(ctx, got)
 		},
 	}
-	cfg := config.Config{AdminToken: h.admin, Demo: demo, DemoLock: lock, MCPRate: 100, MCPBurst: 100, FixtureURL: mcpSrv.URL, OrdersDSN: dsn}
+	cfg := config.Config{AdminToken: h.admin, Demo: demo, DemoLock: lock, MCPRate: 100, MCPBurst: 100, FixtureURL: mcpSrv.URL, OrdersDSN: dsn, SingleTenant: true}
 	// The store was opened with a placeholder fixture URL. Demo tests that create tools
 	// use cfg only for the lock flag; tool validation uses the store's fixture URL.
 	api := &Server{
@@ -256,6 +258,89 @@ func TestTimeoutAndRestartDoNotForward(t *testing.T) {
 	}
 	if h.dials.Load() != dials {
 		t.Fatal("interrupted call opened a database connection")
+	}
+}
+
+func TestRegoPolicyEngine(t *testing.T) {
+	h := newHarness(t, false, false)
+	h.adminRaw(http.MethodPost, "/v1/policies", []byte(`{
+	  "version": 1,
+	  "engine": "rego",
+	  "rego": "package keywarden\n\nimport rego.v1\n\ndecision := {\"effect\": \"allow\", \"rule_id\": \"orders-read\"} if {\n\t\tinput.tool_id == \"orders\"\n\t\tinput.name == \"query\"\n\t\tinput.sql_class == \"read\"\n\t}\n\ndecision := {\"effect\": \"deny\", \"rule_id\": \"orders-destroy\"} if {\n\t\tinput.tool_id == \"orders\"\n\t\tinput.name == \"query\"\n\t\tinput.sql_class == \"destructive\"\n\t}\n\nvisible if {\n\t\tinput.tool_id == \"orders\"\n\t\tinput.name == \"query\"\n\t}\n"
+	}`))
+	token := h.taskToken()
+
+	listed := h.mcp(token, "tools/list", `{}`)
+	if listed.err != "" || !strings.Contains(listed.raw, "orders__query") {
+		t.Fatalf("rego list: %s %s", listed.err, listed.raw)
+	}
+
+	dials := h.dials.Load()
+	got := h.mcp(token, "tools/call", `{"name":"orders__query","arguments":{"sql":"SELECT status FROM demo_orders.shipments WHERE id = 1042"}}`)
+	if got.isError || !strings.Contains(got.raw, "shipped") {
+		t.Fatalf("rego allow: error=%v body=%s", got.isError, got.raw)
+	}
+	if h.dials.Load() != dials+1 {
+		t.Fatal("rego allow did not dial")
+	}
+
+	dials = h.dials.Load()
+	got = h.mcp(token, "tools/call", `{"name":"orders__query","arguments":{"sql":"DROP TABLE demo_orders.scratch"}}`)
+	if !got.isError || !strings.Contains(got.raw, "orders-destroy") {
+		t.Fatalf("rego deny: error=%v body=%s", got.isError, got.raw)
+	}
+	if h.dials.Load() != dials {
+		t.Fatal("rego deny opened a database connection")
+	}
+
+	status := h.adminStatus(http.MethodPost, "/v1/policies", []byte(`{"version":1,"engine":"rego","rego":"not rego"}`))
+	if status != http.StatusBadRequest {
+		t.Fatalf("invalid rego applied with status %d", status)
+	}
+}
+
+func TestHTTPToolCall(t *testing.T) {
+	h := newHarness(t, false, false)
+	var hitAuth string
+	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hitAuth = r.Header.Get("Authorization")
+		if r.URL.Path != "/v1/ping" {
+			http.NotFound(w, r)
+			return
+		}
+		w.WriteHeader(200)
+		_, _ = w.Write([]byte(`{"pong":true}`))
+	}))
+	t.Cleanup(api.Close)
+	h.adminJSON(http.MethodPost, "/v1/tools", map[string]any{
+		"id": "billingapi", "name": "Billing API", "kind": "http",
+		"config": map[string]any{
+			"base_url": api.URL, "allowed_methods": []string{"GET"}, "path_prefix": "/v1",
+		},
+		"secret": map[string]any{"headers": map[string]string{"Authorization": "Bearer sealed"}},
+	})
+	h.adminRaw(http.MethodPost, "/v1/policies", []byte(`{
+	  "version": 1,
+	  "rules": [
+	    {"id": "billing-get", "match": {"agent": "support", "tool": "billingapi", "name": "request"}, "effect": "allow"},
+	    {"id": "orders-read", "match": {"agent": "support", "tool": "orders", "name": "query"}, "when": {"sql": "read"}, "effect": "allow"}
+	  ]
+	}`))
+	token := h.taskToken()
+	listed := h.mcp(token, "tools/list", `{}`)
+	if !strings.Contains(listed.raw, "billingapi__request") {
+		t.Fatalf("list missing http tool: %s", listed.raw)
+	}
+	got := h.mcp(token, "tools/call", `{"name":"billingapi__request","arguments":{"method":"GET","path":"/v1/ping"}}`)
+	if got.isError || !strings.Contains(got.raw, "pong") {
+		t.Fatalf("http call: error=%v body=%s", got.isError, got.raw)
+	}
+	if hitAuth != "Bearer sealed" {
+		t.Fatalf("sealed header not forwarded: %q", hitAuth)
+	}
+	got = h.mcp(token, "tools/call", `{"name":"billingapi__request","arguments":{"method":"POST","path":"/v1/ping"}}`)
+	if !got.isError {
+		t.Fatalf("disallowed method should fail: %s", got.raw)
 	}
 }
 
@@ -435,5 +520,151 @@ func (h *harness) mustSQL(ctx context.Context, sql string) {
 	h.t.Helper()
 	if _, err := h.store.Pool().Exec(ctx, sql); err != nil {
 		h.t.Fatal(err)
+	}
+}
+
+func TestOrgIsolation(t *testing.T) {
+	dsn := os.Getenv("KEYWARDEN_TEST_DATABASE_URL")
+	if dsn == "" {
+		t.Skip("KEYWARDEN_TEST_DATABASE_URL is not set")
+	}
+	ctx := context.Background()
+	key := bytes.Repeat([]byte{9}, 32)
+	v, err := vault.New(key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	st, err := store.Open(ctx, store.Options{
+		DatabaseURL:  dsn,
+		Vault:        v,
+		SingleTenant: false,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(st.Close)
+	if err := st.Migrate(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.ResetForTests(ctx); err != nil {
+		t.Fatal(err)
+	}
+	orgA, err := st.CreateOrganization(ctx, "acme", "Acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	orgB, err := st.CreateOrganization(ctx, "globex", "Globex")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tokA, err := st.IssueOrgAdminToken(ctx, orgA.ID, "a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tokB, err := st.IssueOrgAdminToken(ctx, orgB.ID, "b")
+	if err != nil {
+		t.Fatal(err)
+	}
+	api := &Server{
+		Store: st,
+		Proxy: &proxy.Proxy{Store: st, Up: &upstream.Dispatcher{}},
+		Cfg:   config.Config{AdminToken: "env-admin-token-value", SingleTenant: false, MCPRate: 100, MCPBurst: 100},
+		Log:   logging.New(io.Discard),
+		Limit: limit.New(100, 100),
+	}
+	srv := httptest.NewServer(api.Handler())
+	t.Cleanup(srv.Close)
+
+	post := func(token, path string, body any) (int, []byte) {
+		t.Helper()
+		raw, _ := json.Marshal(body)
+		req, err := http.NewRequest(http.MethodPost, srv.URL+path, bytes.NewReader(raw))
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Authorization", "Bearer "+token)
+		req.Header.Set("Content-Type", "application/json")
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer res.Body.Close()
+		out, _ := io.ReadAll(res.Body)
+		return res.StatusCode, out
+	}
+	get := func(token, path string) (int, []byte) {
+		t.Helper()
+		req, err := http.NewRequest(http.MethodGet, srv.URL+path, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Authorization", "Bearer "+token)
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer res.Body.Close()
+		out, _ := io.ReadAll(res.Body)
+		return res.StatusCode, out
+	}
+
+	if status, _ := post("env-admin-token-value", "/v1/agents", map[string]string{"id": "x", "name": "X"}); status != http.StatusUnauthorized {
+		t.Fatalf("env token in multi-tenant mode: %d", status)
+	}
+	if status, _ := post(tokA, "/v1/agents", map[string]string{"id": "support", "name": "Support A"}); status != http.StatusCreated {
+		t.Fatalf("create agent A: %d", status)
+	}
+	if status, body := get(tokB, "/v1/agents"); status != http.StatusOK {
+		t.Fatalf("list B: %d %s", status, body)
+	} else {
+		var parsed struct {
+			Agents []store.Agent `json:"agents"`
+		}
+		if err := json.Unmarshal(body, &parsed); err != nil {
+			t.Fatal(err)
+		}
+		if len(parsed.Agents) != 0 {
+			t.Fatalf("org B saw org A agents: %+v", parsed.Agents)
+		}
+	}
+	if status, _ := post(tokB, "/v1/agents", map[string]string{"id": "support", "name": "Support B"}); status != http.StatusCreated {
+		t.Fatalf("create agent B: %d", status)
+	}
+	policy := []byte(`{"version":1,"rules":[{"id":"deny-all","match":{"agent":"support","tool":"x","name":"y"},"effect":"deny"}]}`)
+	req, _ := http.NewRequest(http.MethodPost, srv.URL+"/v1/policies", bytes.NewReader(policy))
+	req.Header.Set("Authorization", "Bearer "+tokA)
+	req.Header.Set("Content-Type", "application/json")
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if res.StatusCode != http.StatusCreated {
+		t.Fatalf("policy A: %d", res.StatusCode)
+	}
+	aCtx := store.WithOrg(ctx, orgA.ID)
+	bCtx := store.WithOrg(ctx, orgB.ID)
+	if _, err := st.ActivePolicy(bCtx); !fail.IsStatus(err, 404) {
+		t.Fatalf("org B should have no policy, got %v", err)
+	}
+	if _, err := st.ActivePolicy(aCtx); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.AppendAudit(aCtx, "probe.a", map[string]any{"n": 1}); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.AppendAudit(bCtx, "probe.b", map[string]any{"n": 1}); err != nil {
+		t.Fatal(err)
+	}
+	va, err := st.VerifyAudit(aCtx)
+	if err != nil || !va.OK || va.Events < 1 {
+		t.Fatalf("audit A: %+v %v", va, err)
+	}
+	vb, err := st.VerifyAudit(bCtx)
+	if err != nil || !vb.OK || vb.Events < 1 {
+		t.Fatalf("audit B: %+v %v", vb, err)
+	}
+	if va.Head == vb.Head {
+		t.Fatal("org audit chains should diverge")
 	}
 }

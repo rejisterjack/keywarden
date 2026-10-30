@@ -29,7 +29,7 @@ The Compose defaults are public. They are for the fictional demo. Generate your 
 
 ## Use it
 
-1. Register an agent and a tool. The tool secret is write-only.
+1. Register an agent and a tool. The tool secret is write-only. Tool kinds are `mcp_http`, `postgres`, `mcp_stdio`, `http` (plain HTTPS `request`), and `aws_http` (SigV4-signed `request`).
 2. Apply a policy. [examples/policy.json](examples/policy.json) is the one the demo loads: reads are allowed, mutations wait, destructive SQL is denied.
 3. Issue a task token and point the agent at `POST /mcp` with `Authorization: Bearer kwt_…`.
 4. Call tools as `toolId__toolName`. `orders__query` takes `{ "sql": "…" }`.
@@ -48,7 +48,7 @@ keywarden audit verify
 
 ## What a policy looks like
 
-Rules are matched in order. The first match wins. If none match, the call is denied.
+Rules are matched in order. The first match wins. If none match, the call is denied. A policy can also set `"engine": "rego"` and carry a Rego module instead of rules; the module decides `allow`, `deny`, or `require_approval` from the same call input. See [examples/policy.rego.json](../examples/policy.rego.json).
 
 ```json
 {
@@ -72,6 +72,10 @@ Rules are matched in order. The first match wins. If none match, the call is den
 ```
 
 `when.sql` is `read`, `mutating`, or `destructive`. An approval covers that call's argument hash and nothing else.
+
+## Tenancy
+
+Compose defaults to one organization (`KEYWARDEN_SINGLE_TENANT=1`). Agents, tools, policies, approvals, and the audit chain are org-scoped. Set `KEYWARDEN_SINGLE_TENANT=0` and issue per-org `kwa_…` admin tokens when one database serves more than one team.
 
 ## Develop
 

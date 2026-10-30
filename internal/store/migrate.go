@@ -65,7 +65,7 @@ func (s *Store) Migrate(ctx context.Context) error {
 			return err
 		}
 	}
-	return nil
+	return s.EnsureDefaultOrg(ctx)
 }
 
 func migrationVersion(name string) (int, error) {
@@ -80,9 +80,12 @@ func migrationVersion(name string) (int, error) {
 // ResetForTests clears product data. It is used by tests against a disposable database.
 func (s *Store) ResetForTests(ctx context.Context) error {
 	_, err := s.pool.Exec(ctx, `
-		TRUNCATE TABLE audit_events, approvals, tool_calls, tasks, policies, tools, agents
+		TRUNCATE TABLE audit_events, approvals, tool_calls, tasks, policies, tools, agents, org_admin_tokens
 		RESTART IDENTITY CASCADE`)
-	return err
+	if err != nil {
+		return err
+	}
+	return s.EnsureDefaultOrg(ctx)
 }
 
 // Pool exposes the connection pool for tests that tamper with rows directly.

@@ -3,16 +3,23 @@ package store
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/rejisterjack/keywarden/internal/canonical"
 )
 
-const auditLock int64 = 7483926150234
+const auditLockSeed uint64 = 7483926150234
+
+func orgAuditLock(orgID uuid.UUID) int64 {
+	sum := sha256.Sum256(orgID[:])
+	return int64(binary.BigEndian.Uint64(sum[:8]) ^ auditLockSeed)
+}
 
 func (s *Store) AppendAudit(ctx context.Context, eventType string, payload map[string]any) error {
 	tx, err := s.pool.Begin(ctx)
@@ -20,18 +27,26 @@ func (s *Store) AppendAudit(ctx context.Context, eventType string, payload map[s
 		return err
 	}
 	defer tx.Rollback(ctx)
-	if err := appendAuditTx(ctx, tx, eventType, payload); err != nil {
+	if err := s.appendAuditTx(ctx, tx, eventType, payload); err != nil {
 		return err
 	}
 	return tx.Commit(ctx)
 }
 
-func appendAuditTx(ctx context.Context, tx pgx.Tx, eventType string, payload map[string]any) error {
-	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, auditLock); err != nil {
+func (s *Store) appendAuditTx(ctx context.Context, tx pgx.Tx, eventType string, payload map[string]any) error {
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return err
+	}
+	return appendAuditInOrg(ctx, tx, orgID, eventType, payload)
+}
+
+func appendAuditInOrg(ctx context.Context, tx pgx.Tx, orgID uuid.UUID, eventType string, payload map[string]any) error {
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, orgAuditLock(orgID)); err != nil {
 		return err
 	}
 	var prev []byte
-	err := tx.QueryRow(ctx, `SELECT hash FROM audit_events ORDER BY seq DESC LIMIT 1`).Scan(&prev)
+	err := tx.QueryRow(ctx, `SELECT hash FROM audit_events WHERE org_id = $1 ORDER BY seq DESC LIMIT 1`, orgID).Scan(&prev)
 	if errors.Is(err, pgx.ErrNoRows) {
 		prev = make([]byte, 32)
 		err = nil
@@ -54,21 +69,25 @@ func appendAuditTx(ctx context.Context, tx pgx.Tx, eventType string, payload map
 	_, _ = mac.Write(canon)
 	sum := mac.Sum(nil)
 	_, err = tx.Exec(ctx, `
-		INSERT INTO audit_events (prev_hash, hash, event_type, payload)
-		VALUES ($1, $2, $3, $4)`, prev, sum, eventType, string(canon))
+		INSERT INTO audit_events (org_id, prev_hash, hash, event_type, payload)
+		VALUES ($1, $2, $3, $4, $5)`, orgID, prev, sum, eventType, string(canon))
 	return err
 }
 
 func (s *Store) ListAudit(ctx context.Context, after int64, limit int) ([]AuditEvent, error) {
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return nil, err
+	}
 	if limit <= 0 || limit > 500 {
 		limit = 100
 	}
 	rows, err := s.pool.Query(ctx, `
 		SELECT seq, event_type, payload, created_at
 		FROM audit_events
-		WHERE seq > $1
+		WHERE org_id = $1 AND seq > $2
 		ORDER BY seq
-		LIMIT $2`, after, limit)
+		LIMIT $3`, orgID, after, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -90,10 +109,15 @@ func (s *Store) ListAudit(ctx context.Context, after int64, limit int) ([]AuditE
 }
 
 func (s *Store) VerifyAudit(ctx context.Context) (VerifyResult, error) {
+	orgID, err := s.org(ctx)
+	if err != nil {
+		return VerifyResult{}, err
+	}
 	rows, err := s.pool.Query(ctx, `
 		SELECT seq, prev_hash, hash, event_type, payload
 		FROM audit_events
-		ORDER BY seq`)
+		WHERE org_id = $1
+		ORDER BY seq`, orgID)
 	if err != nil {
 		return VerifyResult{}, err
 	}
@@ -109,9 +133,6 @@ func (s *Store) VerifyAudit(ctx context.Context) (VerifyResult, error) {
 			return VerifyResult{}, err
 		}
 		n++
-		if seq != int64(n) {
-			return VerifyResult{OK: false, Events: n, BrokenSeq: seq, Reason: "sequence gap"}, nil
-		}
 		if n == 1 {
 			if len(prevHash) != 32 || !allZero(prevHash) {
 				return VerifyResult{OK: false, Events: n, BrokenSeq: seq, Reason: "genesis hash is not zero"}, nil

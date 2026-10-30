@@ -172,11 +172,12 @@ func openStore(ctx context.Context, cfg config.Config) (*store.Store, error) {
 		return nil, err
 	}
 	return store.Open(ctx, store.Options{
-		DatabaseURL: cfg.DatabaseURL,
-		Vault:       v,
-		Demo:        cfg.Demo,
-		AllowStdio:  cfg.AllowStdio && !cfg.Demo,
-		FixtureURL:  cfg.FixtureURL,
-		OrdersDSN:   cfg.OrdersDSN,
+		DatabaseURL:  cfg.DatabaseURL,
+		Vault:        v,
+		Demo:         cfg.Demo,
+		AllowStdio:   cfg.AllowStdio && !cfg.Demo,
+		FixtureURL:   cfg.FixtureURL,
+		OrdersDSN:    cfg.OrdersDSN,
+		SingleTenant: cfg.SingleTenant,
 	})
 }

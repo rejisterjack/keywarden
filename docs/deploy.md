@@ -33,6 +33,7 @@ Set these on the proxy and refuse to boot any other way:
 
 ```
 KEYWARDEN_DEMO=1
+KEYWARDEN_SINGLE_TENANT=1
 KEYWARDEN_REQUIRE_DEMO=1
 KEYWARDEN_DEMO_LOCK=1
 KEYWARDEN_SEED=1
@@ -58,6 +59,17 @@ KEYWARDEN_SESSION_SECRET=<openssl rand -base64 32>
 Publish the dashboard password in the demo instructions. Do not publish the admin token or the vault key. The browser only receives a session cookie.
 
 Do not point `KEYWARDEN_ORDERS_DSN` at the Keywarden database. The orders role should own only the fictional `orders` table.
+
+## Go-live checklist for the hosted demo
+
+Work through this once the three services exist. The target hostname is `keywarden.rejisterjack.com`.
+
+1. Neon: one project, two databases. `neondb` is the Keywarden control plane; a separate `orders` database owned by a restricted `orders_owner` role holds only the fictional `orders` table.
+2. Railway: create the `keywarden` project from `deploy/Dockerfile` (railway.toml already points at it). Set every variable in the hosted-demo block above, with `KEYWARDEN_DATABASE_URL` pointing at `neondb` and `KEYWARDEN_ORDERS_DSN` at the orders database, both with `sslmode=require`.
+3. Verify the proxy before going further: `https://<railway-host>/healthz` returns `ok`, and `/v1/meta` reports `"demo": true` and `"demo_lock": true`. If either is false, stop and fix the environment.
+4. Vercel: project root `dashboard/`, with the four dashboard variables and `KEYWARDEN_API_URL` set to the Railway URL. Confirm the login screen renders.
+5. DNS: add the domain `keywarden.rejisterjack.com` to the Vercel project and create the CNAME or A record the Vercel domain page asks for. Wait for the certificate to issue.
+6. Acceptance: `https://keywarden.rejisterjack.com` returns 200 with the login screen, a mutation such as creating an agent is refused with the demo-lock message, and `scripts/quickstart.sh` against the Railway URL completes with `audit chain ok`.
 
 ## Real self-host
 

@@ -22,6 +22,9 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
         {meta.demo ? (
           <p className="banner">Demo mode. The data here is fictional. Do not register real credentials.</p>
         ) : null}
+        {meta.single_tenant === false ? (
+          <p className="banner">Multi-tenant mode. This session is scoped to one organization admin token.</p>
+        ) : null}
         {children}
       </div>
     </div>

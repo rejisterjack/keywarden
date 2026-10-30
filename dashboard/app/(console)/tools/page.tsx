@@ -53,6 +53,8 @@ export default async function ToolsPage({
             <option value="mcp_http">MCP over HTTP</option>
             <option value="postgres">Postgres query</option>
             <option value="mcp_stdio">MCP over stdio</option>
+            <option value="http">HTTP API</option>
+            <option value="aws_http">AWS SigV4 HTTP</option>
           </select>
           <label htmlFor="config">Config JSON</label>
           <textarea id="config" name="config" className="mono" defaultValue='{"url":"http://127.0.0.1:8090/mcp"}' />

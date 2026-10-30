@@ -3,6 +3,8 @@ export type Meta = {
   version?: string;
   demo: boolean;
   demo_lock: boolean;
+  single_tenant?: boolean;
+  default_org?: string;
 };
 
 export type Agent = { id: string; name: string; created_at: string };

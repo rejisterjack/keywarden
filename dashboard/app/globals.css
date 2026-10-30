@@ -76,6 +76,7 @@ h1 { font-family: var(--font-serif), Georgia, serif; font-weight: 500; font-size
 .card h2 { margin: 0 0 6px; font-size: 18px; }
 .meta { color: var(--muted); font-size: 13px; display: flex; flex-wrap: wrap; gap: 10px; }
 .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 2px 8px; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+.pill { background: var(--paper-2); color: var(--muted); border: 1px solid var(--line); }
 .pill.pending { background: var(--amber-bg); color: var(--amber); }
 .pill.ok { background: #e5f4ec; color: var(--green); }
 .pill.bad { background: var(--red-bg); color: var(--red); }

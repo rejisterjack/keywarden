@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "engine": "rego",
+  "rego": "package keywarden\n\nimport rego.v1\n\ndecision := {\"effect\": \"allow\", \"rule_id\": \"orders-read\"} if {\n\tinput.tool_id == \"orders\"\n\tinput.name == \"query\"\n\tinput.sql_class == \"read\"\n}\n\ndecision := {\"effect\": \"require_approval\", \"rule_id\": \"orders-mutate\", \"timeout_seconds\": 120} if {\n\tinput.tool_id == \"orders\"\n\tinput.name == \"query\"\n\tinput.sql_class == \"mutating\"\n}\n\ndecision := {\"effect\": \"deny\", \"rule_id\": \"orders-destroy\"} if {\n\tinput.tool_id == \"orders\"\n\tinput.name == \"query\"\n\tinput.sql_class == \"destructive\"\n}\n\nvisible if {\n\tinput.tool_id == \"orders\"\n\tinput.name == \"query\"\n}\n"
+}
