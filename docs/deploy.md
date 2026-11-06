@@ -25,7 +25,7 @@ Use three services, and only fictional data.
 
 | Piece | Where | Notes |
 | --- | --- | --- |
-| Proxy | Railway | `railway.toml` builds `deploy/Dockerfile`. Health check is `/healthz`. |
+| Proxy | Render | Free web service from `deploy/Dockerfile`. Health check is `/healthz`. `railway.toml` remains for an account that can provision another Railway project. |
 | Database | Neon | One database for Keywarden. A second database, or a restricted role, for the orders tool. |
 | Dashboard | Vercel | Project root is `dashboard/`. |
 
@@ -41,7 +41,8 @@ KEYWARDEN_DATABASE_URL=...        # Neon connection string, sslmode=require
 KEYWARDEN_ORDERS_DSN=...          # fictional orders database only
 KEYWARDEN_VAULT_KEY=...           # openssl rand -base64 32
 KEYWARDEN_ADMIN_TOKEN=...         # at least 16 characters, not the example
-KEYWARDEN_PUBLIC_URL=https://...  # the Railway URL
+KEYWARDEN_PUBLIC_URL=https://...  # the proxy URL
+KEYWARDEN_TRUST_PROXY=1
 KEYWARDEN_FIXTURE_URL=http://127.0.0.1:8080/demo/mcp
 ```
 
@@ -50,7 +51,7 @@ KEYWARDEN_FIXTURE_URL=http://127.0.0.1:8080/demo/mcp
 On Vercel, set the root directory to `dashboard/` and:
 
 ```
-KEYWARDEN_API_URL=https://<railway-host>
+KEYWARDEN_API_URL=https://<proxy-host>
 KEYWARDEN_ADMIN_TOKEN=<same admin token>
 KEYWARDEN_DASHBOARD_PASSWORD=<a password you are willing to publish>
 KEYWARDEN_SESSION_SECRET=<openssl rand -base64 32>
@@ -65,11 +66,11 @@ Do not point `KEYWARDEN_ORDERS_DSN` at the Keywarden database. The orders role s
 Work through this once the three services exist. The target hostname is `keywarden.rejisterjack.com`.
 
 1. Neon: one project, two databases. `neondb` is the Keywarden control plane; a separate `orders` database owned by a restricted `orders_owner` role holds only the fictional `orders` table.
-2. Railway: create the `keywarden` project from `deploy/Dockerfile` (railway.toml already points at it). Set every variable in the hosted-demo block above, with `KEYWARDEN_DATABASE_URL` pointing at `neondb` and `KEYWARDEN_ORDERS_DSN` at the orders database, both with `sslmode=require`.
-3. Verify the proxy before going further: `https://<railway-host>/healthz` returns `ok`, and `/v1/meta` reports `"demo": true` and `"demo_lock": true`. If either is false, stop and fix the environment.
-4. Vercel: project root `dashboard/`, with the four dashboard variables and `KEYWARDEN_API_URL` set to the Railway URL. Confirm the login screen renders.
+2. Proxy: deploy `deploy/Dockerfile` as a Render web service (or Railway, when that account can provision a project). The process listens on `PORT` when `KEYWARDEN_HTTP_ADDR` is unset, which is what Render injects. Set every variable in the hosted-demo block above, with `KEYWARDEN_DATABASE_URL` pointing at `neondb` and `KEYWARDEN_ORDERS_DSN` at the orders database, both with `sslmode=require`. On this account the Railway free plan cannot provision a second project, and the existing `tock` project stays untouched.
+3. Verify the proxy before going further: `https://<proxy-host>/healthz` returns `ok`, and `/v1/meta` reports `"demo": true` and `"demo_lock": true`. If either is false, stop and fix the environment.
+4. Vercel: project root `dashboard/`, with the four dashboard variables and `KEYWARDEN_API_URL` set to the proxy URL. Confirm the login screen renders.
 5. DNS: add the domain `keywarden.rejisterjack.com` to the Vercel project and create the CNAME or A record the Vercel domain page asks for. Wait for the certificate to issue.
-6. Acceptance: `https://keywarden.rejisterjack.com` returns 200 with the login screen, a mutation such as creating an agent is refused with the demo-lock message, and `scripts/quickstart.sh` against the Railway URL completes with `audit chain ok`.
+6. Acceptance: `https://keywarden.rejisterjack.com` returns 200 with the login screen, a mutation such as creating an agent is refused with the demo-lock message, and `scripts/quickstart.sh` against the proxy URL completes with `audit chain ok`. A free Render service sleeps after 15 minutes without traffic and takes about a minute to wake.
 
 ## Real self-host
 

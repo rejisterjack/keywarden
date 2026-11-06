@@ -38,7 +38,7 @@ func Load() (Config, error) {
 	cfg := Config{
 		DatabaseURL: strings.TrimSpace(os.Getenv("KEYWARDEN_DATABASE_URL")),
 		AdminToken:  strings.TrimSpace(os.Getenv("KEYWARDEN_ADMIN_TOKEN")),
-		HTTPAddr:    envDefault("KEYWARDEN_HTTP_ADDR", ":8080"),
+		HTTPAddr:    listenAddr(),
 		Demo:        envBool("KEYWARDEN_DEMO"),
 		RequireDemo: envBool("KEYWARDEN_REQUIRE_DEMO"),
 		AllowStdio:  envBool("KEYWARDEN_ALLOW_STDIO"),
@@ -54,6 +54,8 @@ func Load() (Config, error) {
 	cfg.PublicURL = strings.TrimRight(envDefault("KEYWARDEN_PUBLIC_URL", defaultPublicURL(cfg.HTTPAddr)), "/")
 	if v := strings.TrimSpace(os.Getenv("KEYWARDEN_FIXTURE_URL")); v != "" {
 		cfg.FixtureURL = strings.TrimRight(v, "/")
+	} else if port := strings.TrimSpace(os.Getenv("PORT")); port != "" && strings.TrimSpace(os.Getenv("KEYWARDEN_HTTP_ADDR")) == "" {
+		cfg.FixtureURL = "http://127.0.0.1:" + port + "/demo/mcp"
 	} else {
 		cfg.FixtureURL = cfg.PublicURL + "/demo/mcp"
 	}
@@ -143,6 +145,16 @@ func envFloat(key string, fallback float64) float64 {
 		return fallback
 	}
 	return n
+}
+
+func listenAddr() string {
+	if v := strings.TrimSpace(os.Getenv("KEYWARDEN_HTTP_ADDR")); v != "" {
+		return v
+	}
+	if port := strings.TrimSpace(os.Getenv("PORT")); port != "" {
+		return "0.0.0.0:" + port
+	}
+	return ":8080"
 }
 
 func defaultPublicURL(addr string) string {

@@ -68,7 +68,7 @@ Keywarden addresses tool calls that flow through a controlled path: scoped acces
 
 | Component | Typical hosting |
 |-----------|-----------------|
-| Proxy | Railway or self-host (Docker) |
+| Proxy | Render, Railway, or self-host (Docker) |
 | Dashboard (demo) | Vercel |
 | Database | Neon or Postgres in Compose |
 
