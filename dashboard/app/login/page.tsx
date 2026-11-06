@@ -17,7 +17,12 @@ export default async function LoginPage({
         <h1>Keywarden</h1>
         <p className="lede">Sign in to review what agents are allowed to do.</p>
         {meta.demo ? (
-          <p className="banner">This demo holds fictional data. Do not enter real credentials.</p>
+          <p className="banner">
+            This demo holds fictional data. Do not enter real credentials.
+            {process.env.KEYWARDEN_DASHBOARD_PASSWORD
+              ? ` Password: ${process.env.KEYWARDEN_DASHBOARD_PASSWORD}`
+              : ""}
+          </p>
         ) : null}
         {error ? <p className="error">{error}</p> : null}
         <form action={login}>

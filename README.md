@@ -16,6 +16,8 @@ docker compose -f deploy/compose/docker-compose.yml up --build
 
 Open http://localhost:3000 and sign in with `local-demo-password`. The proxy is on http://localhost:8080.
 
+The public demo is https://keywarden.rejisterjack.com. Sign in with `U8qeBSAVI7qFJbWy`. It holds fictional data only.
+
 Then, from another shell:
 
 ```bash
