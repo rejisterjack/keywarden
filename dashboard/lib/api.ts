@@ -23,6 +23,16 @@ export type Policy = {
   active: boolean;
   created_at: string;
 };
+export type Task = {
+  id: string;
+  org_id: string;
+  agent_id: string;
+  tool_ids: string[] | null;
+  unrestricted: boolean;
+  expires_at: string;
+  revoked_at?: string | null;
+  created_at: string;
+};
 export type Approval = {
   id: string;
   status: string;

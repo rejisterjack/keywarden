@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -42,6 +43,9 @@ func (s *Server) Handler() http.Handler {
 	if s.Cfg.Demo && s.Fixture != nil {
 		mux.Handle("/demo/mcp", s.Fixture)
 	}
+	mux.HandleFunc("GET /v1/orgs", s.listOrgs)
+	mux.HandleFunc("POST /v1/orgs", s.createOrg)
+	mux.HandleFunc("POST /v1/orgs/{id}/tokens", s.issueOrgToken)
 	mux.HandleFunc("GET /v1/agents", s.listAgents)
 	mux.HandleFunc("POST /v1/agents", s.createAgent)
 	mux.HandleFunc("DELETE /v1/agents/{id}", s.deleteAgent)
@@ -79,12 +83,17 @@ func (s *Server) wrap(next http.Handler) http.Handler {
 			}
 		}
 		if needsAdmin(r.URL.Path) {
-			orgID, err := s.Store.AuthenticateAdmin(r.Context(), bearer(r), s.Cfg.AdminToken)
-			if err != nil {
-				writeError(sw, http.StatusUnauthorized, "unauthorized")
-				return
+			tok := bearer(r)
+			if isOrgRoute(r.URL.Path) && store.AuthenticateBootstrap(tok, s.Cfg.AdminToken) {
+				r = r.WithContext(withBootstrap(r.Context()))
+			} else {
+				orgID, err := s.Store.AuthenticateAdmin(r.Context(), tok, s.Cfg.AdminToken)
+				if err != nil {
+					writeError(sw, http.StatusUnauthorized, "unauthorized")
+					return
+				}
+				r = r.WithContext(store.WithOrg(r.Context(), orgID))
 			}
-			r = r.WithContext(store.WithOrg(r.Context(), orgID))
 		}
 		if s.locked(r) {
 			writeError(sw, http.StatusForbidden, "the hosted demo does not accept this change")
@@ -120,6 +129,21 @@ func needsAdmin(path string) bool {
 	}
 }
 
+func isOrgRoute(path string) bool {
+	return path == "/v1/orgs" || strings.HasPrefix(path, "/v1/orgs/")
+}
+
+type bootstrapKey struct{}
+
+func withBootstrap(ctx context.Context) context.Context {
+	return context.WithValue(ctx, bootstrapKey{}, true)
+}
+
+func isBootstrap(ctx context.Context) bool {
+	v, _ := ctx.Value(bootstrapKey{}).(bool)
+	return v
+}
+
 func (s *Server) health(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
@@ -151,6 +175,92 @@ func (s *Server) mcp(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx := store.WithOrg(r.Context(), task.OrgID)
 	s.Proxy.ServeMCP(w, r.WithContext(proxy.WithTask(ctx, task)))
+}
+
+func (s *Server) listOrgs(w http.ResponseWriter, r *http.Request) {
+	if isBootstrap(r.Context()) {
+		items, err := s.Store.ListOrganizations(r.Context())
+		if err != nil {
+			s.fail(w, err)
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"organizations": items})
+		return
+	}
+	orgID, ok := store.OrgFrom(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	item, err := s.Store.GetOrganization(r.Context(), orgID)
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"organizations": []store.Organization{item}})
+}
+
+func (s *Server) createOrg(w http.ResponseWriter, r *http.Request) {
+	if !isBootstrap(r.Context()) {
+		writeError(w, http.StatusForbidden, "creating an organization requires the process admin token")
+		return
+	}
+	var body struct {
+		Slug  string `json:"slug"`
+		Name  string `json:"name"`
+		Label string `json:"label"`
+	}
+	if !decode(w, r, &body) {
+		return
+	}
+	org, err := s.Store.CreateOrganization(r.Context(), body.Slug, body.Name)
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	token, err := s.Store.IssueOrgAdminToken(r.Context(), org.ID, body.Label)
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	writeJSON(w, http.StatusCreated, map[string]any{"organization": org, "token": token})
+}
+
+func (s *Server) issueOrgToken(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid organization id")
+		return
+	}
+	if !isBootstrap(r.Context()) {
+		orgID, ok := store.OrgFrom(r.Context())
+		if !ok || orgID != id {
+			writeError(w, http.StatusForbidden, "token can only be issued for the authenticated organization")
+			return
+		}
+	}
+	var body struct {
+		Label string `json:"label"`
+	}
+	raw, err := io.ReadAll(io.LimitReader(r.Body, 1<<20))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+	if len(strings.TrimSpace(string(raw))) > 0 {
+		dec := json.NewDecoder(strings.NewReader(string(raw)))
+		dec.DisallowUnknownFields()
+		if err := dec.Decode(&body); err != nil {
+			writeError(w, http.StatusBadRequest, "invalid JSON")
+			return
+		}
+	}
+	token, err := s.Store.IssueOrgAdminToken(r.Context(), id, body.Label)
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	writeJSON(w, http.StatusCreated, map[string]any{"token": token})
 }
 
 func (s *Server) listAgents(w http.ResponseWriter, r *http.Request) {

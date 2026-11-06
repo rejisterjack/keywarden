@@ -79,6 +79,98 @@ func taskCreate(args []string) error {
 	return enc.Encode(out)
 }
 
+func orgCmd(args []string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("usage: keywarden org create|token")
+	}
+	switch args[0] {
+	case "create":
+		return orgCreate(args[1:])
+	case "token":
+		return orgToken(args[1:])
+	default:
+		return fmt.Errorf("unknown org command %q", args[0])
+	}
+}
+
+func orgCreate(args []string) error {
+	slugID, name, label := "", "", ""
+	for i := 0; i < len(args); i++ {
+		switch args[i] {
+		case "--slug":
+			i++
+			if i >= len(args) {
+				return fmt.Errorf("--slug requires a value")
+			}
+			slugID = args[i]
+		case "--name":
+			i++
+			if i >= len(args) {
+				return fmt.Errorf("--name requires a value")
+			}
+			name = args[i]
+		case "--label":
+			i++
+			if i >= len(args) {
+				return fmt.Errorf("--label requires a value")
+			}
+			label = args[i]
+		default:
+			return fmt.Errorf("unknown argument %q", args[i])
+		}
+	}
+	if slugID == "" || name == "" {
+		return fmt.Errorf("--slug and --name are required")
+	}
+	body := map[string]any{"slug": slugID, "name": name}
+	if label != "" {
+		body["label"] = label
+	}
+	var out map[string]any
+	if err := api(http.MethodPost, "/v1/orgs", body, &out); err != nil {
+		return err
+	}
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "  ")
+	return enc.Encode(out)
+}
+
+func orgToken(args []string) error {
+	orgID, label := "", ""
+	for i := 0; i < len(args); i++ {
+		switch args[i] {
+		case "--org":
+			i++
+			if i >= len(args) {
+				return fmt.Errorf("--org requires a value")
+			}
+			orgID = args[i]
+		case "--label":
+			i++
+			if i >= len(args) {
+				return fmt.Errorf("--label requires a value")
+			}
+			label = args[i]
+		default:
+			return fmt.Errorf("unknown argument %q", args[i])
+		}
+	}
+	if orgID == "" {
+		return fmt.Errorf("--org is required")
+	}
+	body := map[string]any{}
+	if label != "" {
+		body["label"] = label
+	}
+	var out map[string]any
+	if err := api(http.MethodPost, "/v1/orgs/"+orgID+"/tokens", body, &out); err != nil {
+		return err
+	}
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "  ")
+	return enc.Encode(out)
+}
+
 func policyCmd(args []string) error {
 	if len(args) != 2 || args[0] != "apply" {
 		return fmt.Errorf("usage: keywarden policy apply <file>")

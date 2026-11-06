@@ -57,6 +57,9 @@ func validatePlainHTTP(config []byte, sec Secret) error {
 	if len(sec.Env) > 0 {
 		return fail.New(400, "http secret does not take env")
 	}
+	if sec.AccessToken != "" {
+		return fail.New(400, "http secret does not take access_token")
+	}
 	return nil
 }
 
@@ -117,6 +120,9 @@ func ValidateAWS(config []byte, sec Secret) error {
 	}
 	if len(sec.Env) > 0 {
 		return fail.New(400, "aws secret does not take env")
+	}
+	if sec.AccessToken != "" {
+		return fail.New(400, "aws secret does not take access_token")
 	}
 	return nil
 }

@@ -668,3 +668,126 @@ func TestOrgIsolation(t *testing.T) {
 		t.Fatal("org audit chains should diverge")
 	}
 }
+
+func TestOrgAdminHTTP(t *testing.T) {
+	dsn := os.Getenv("KEYWARDEN_TEST_DATABASE_URL")
+	if dsn == "" {
+		t.Skip("KEYWARDEN_TEST_DATABASE_URL is not set")
+	}
+	ctx := context.Background()
+	key := bytes.Repeat([]byte{11}, 32)
+	v, err := vault.New(key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	st, err := store.Open(ctx, store.Options{
+		DatabaseURL:  dsn,
+		Vault:        v,
+		SingleTenant: false,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(st.Close)
+	if err := st.Migrate(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.ResetForTests(ctx); err != nil {
+		t.Fatal(err)
+	}
+	bootstrap := "bootstrap-admin-token"
+	api := &Server{
+		Store: st,
+		Proxy: &proxy.Proxy{Store: st, Up: &upstream.Dispatcher{}},
+		Cfg:   config.Config{AdminToken: bootstrap, SingleTenant: false, MCPRate: 100, MCPBurst: 100},
+		Log:   logging.New(io.Discard),
+		Limit: limit.New(100, 100),
+	}
+	srv := httptest.NewServer(api.Handler())
+	t.Cleanup(srv.Close)
+
+	do := func(method, token, path string, body any) (int, []byte) {
+		t.Helper()
+		var r io.Reader
+		if body != nil {
+			raw, _ := json.Marshal(body)
+			r = bytes.NewReader(raw)
+		}
+		req, err := http.NewRequest(method, srv.URL+path, r)
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Authorization", "Bearer "+token)
+		if body != nil {
+			req.Header.Set("Content-Type", "application/json")
+		}
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer res.Body.Close()
+		out, _ := io.ReadAll(res.Body)
+		return res.StatusCode, out
+	}
+
+	status, body := do(http.MethodPost, bootstrap, "/v1/orgs", map[string]string{
+		"slug": "northwind", "name": "Northwind", "label": "ops",
+	})
+	if status != http.StatusCreated {
+		t.Fatalf("create org: %d %s", status, body)
+	}
+	var created struct {
+		Organization store.Organization `json:"organization"`
+		Token        string             `json:"token"`
+	}
+	if err := json.Unmarshal(body, &created); err != nil {
+		t.Fatal(err)
+	}
+	if created.Organization.Slug != "northwind" || !strings.HasPrefix(created.Token, "kwa_") {
+		t.Fatalf("create response: %+v", created)
+	}
+
+	status, body = do(http.MethodGet, bootstrap, "/v1/orgs", nil)
+	if status != http.StatusOK {
+		t.Fatalf("list bootstrap: %d %s", status, body)
+	}
+	var listed struct {
+		Organizations []store.Organization `json:"organizations"`
+	}
+	if err := json.Unmarshal(body, &listed); err != nil {
+		t.Fatal(err)
+	}
+	if len(listed.Organizations) < 2 {
+		t.Fatalf("expected default + northwind, got %d", len(listed.Organizations))
+	}
+
+	status, body = do(http.MethodGet, created.Token, "/v1/orgs", nil)
+	if status != http.StatusOK {
+		t.Fatalf("list org admin: %d %s", status, body)
+	}
+	if err := json.Unmarshal(body, &listed); err != nil {
+		t.Fatal(err)
+	}
+	if len(listed.Organizations) != 1 || listed.Organizations[0].ID != created.Organization.ID {
+		t.Fatalf("org admin list: %+v", listed.Organizations)
+	}
+
+	status, body = do(http.MethodPost, created.Token, "/v1/orgs/"+created.Organization.ID.String()+"/tokens", map[string]string{"label": "ci"})
+	if status != http.StatusCreated {
+		t.Fatalf("issue token: %d %s", status, body)
+	}
+	var issued struct {
+		Token string `json:"token"`
+	}
+	if err := json.Unmarshal(body, &issued); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(issued.Token, "kwa_") || issued.Token == created.Token {
+		t.Fatalf("issued token: %q", issued.Token)
+	}
+
+	status, _ = do(http.MethodPost, created.Token, "/v1/orgs", map[string]string{"slug": "evil", "name": "Evil"})
+	if status != http.StatusForbidden {
+		t.Fatalf("org admin create should be forbidden: %d", status)
+	}
+}

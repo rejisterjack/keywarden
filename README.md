@@ -29,9 +29,9 @@ The Compose defaults are public. They are for the fictional demo. Generate your 
 
 ## Use it
 
-1. Register an agent and a tool. The tool secret is write-only. Tool kinds are `mcp_http`, `postgres`, `mcp_stdio`, `http` (plain HTTPS `request`), and `aws_http` (SigV4-signed `request`).
+1. Register an agent and a tool. The tool secret is write-only. Tool kinds are `mcp_http`, `postgres`, `mcp_stdio`, `http` (plain HTTPS `request`), `aws_http` (SigV4-signed `request`), `gcp_http` and `azure_http` (Bearer `access_token` helpers).
 2. Apply a policy. [examples/policy.json](examples/policy.json) is the one the demo loads: reads are allowed, mutations wait, destructive SQL is denied.
-3. Issue a task token and point the agent at `POST /mcp` with `Authorization: Bearer kwt_…`.
+3. Issue a task token and point the agent at `POST /mcp` with `Authorization: Bearer kwt_…`. MCP is POST-only; there is no GET SSE stream (see [docs/limitations.md](docs/limitations.md)).
 4. Call tools as `toolId__toolName`. `orders__query` takes `{ "sql": "…" }`.
 5. Approve or deny the waiting call in the dashboard. Read the audit log after.
 
@@ -44,7 +44,14 @@ keywarden policy apply examples/policy.json
 keywarden audit verify
 ```
 
-`serve` and `seed` talk to Postgres directly. `task`, `policy`, and `audit` talk to a running proxy.
+`serve` and `seed` talk to Postgres directly. `task`, `org`, `policy`, and `audit` talk to a running proxy.
+
+Multi-tenant operators create orgs with the process admin token, then use the returned `kwa_…` token as `KEYWARDEN_ADMIN_TOKEN` for that org:
+
+```bash
+keywarden org create --slug acme --name Acme
+keywarden org token --org <org-id> --label ci
+```
 
 ## What a policy looks like
 
@@ -75,7 +82,7 @@ Rules are matched in order. The first match wins. If none match, the call is den
 
 ## Tenancy
 
-Compose defaults to one organization (`KEYWARDEN_SINGLE_TENANT=1`). Agents, tools, policies, approvals, and the audit chain are org-scoped. Set `KEYWARDEN_SINGLE_TENANT=0` and issue per-org `kwa_…` admin tokens when one database serves more than one team.
+Compose defaults to one organization (`KEYWARDEN_SINGLE_TENANT=1`). Agents, tools, policies, approvals, and the audit chain are org-scoped. Set `KEYWARDEN_SINGLE_TENANT=0`, then `POST /v1/orgs` (or `keywarden org create`) with the process `KEYWARDEN_ADMIN_TOKEN` to create tenants and receive per-org `kwa_…` admin tokens.
 
 ## Develop
 

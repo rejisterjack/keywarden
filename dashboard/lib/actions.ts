@@ -24,6 +24,53 @@ export async function logout() {
   redirect("/login");
 }
 
+export async function createTask(formData: FormData) {
+  await requireSession();
+  const agentId = String(formData.get("agent_id") ?? "").trim();
+  const ttlRaw = String(formData.get("ttl_seconds") ?? "").trim();
+  const toolsRaw = String(formData.get("tool_ids") ?? "").trim();
+  const body: Record<string, unknown> = { agent_id: agentId };
+  if (ttlRaw) {
+    const ttl = Number(ttlRaw);
+    if (!Number.isFinite(ttl) || ttl <= 0) {
+      fail("/tasks", new KwError("ttl_seconds must be a positive number"));
+    }
+    body.ttl_seconds = Math.floor(ttl);
+  }
+  if (toolsRaw) {
+    body.tool_ids = toolsRaw
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean);
+  }
+  let token = "";
+  try {
+    const out = await kw<{ token: string }>("/v1/tasks", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+    token = out.token ?? "";
+  } catch (err) {
+    fail("/tasks", err);
+  }
+  revalidatePath("/tasks");
+  if (token) {
+    redirect(`/tasks?token=${encodeURIComponent(token)}`);
+  }
+  redirect("/tasks");
+}
+
+export async function revokeTask(formData: FormData) {
+  await requireSession();
+  const id = String(formData.get("id") ?? "");
+  try {
+    await kw(`/v1/tasks/${id}/revoke`, { method: "POST" });
+  } catch (err) {
+    fail("/tasks", err);
+  }
+  revalidatePath("/tasks");
+}
+
 export async function decide(formData: FormData) {
   await requireSession();
   const id = String(formData.get("id") ?? "");

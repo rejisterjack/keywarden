@@ -21,6 +21,8 @@ type Dispatcher struct {
 	Stdio      mcp.Stdio
 	Plain      PlainHTTP
 	AWS        AWSHTTP
+	GCP        GCPHTTP
+	Azure      AzureHTTP
 	Connect    func(ctx context.Context, dsn string) (*pgx.Conn, error)
 	AllowStdio bool
 }
@@ -53,6 +55,10 @@ func (d *Dispatcher) List(ctx context.Context, tool store.Tool, secretRaw []byte
 		return d.Plain.List(ctx, tool.Config, secretRaw)
 	case "aws_http":
 		return d.AWS.List(ctx, tool.Config, secretRaw)
+	case "gcp_http":
+		return d.GCP.List(ctx, tool.Config, secretRaw)
+	case "azure_http":
+		return d.Azure.List(ctx, tool.Config, secretRaw)
 	default:
 		return nil, fail.New(400, "unknown tool kind")
 	}
@@ -99,6 +105,16 @@ func (d *Dispatcher) Call(ctx context.Context, tool store.Tool, secretRaw []byte
 			return "", fail.New(404, "unknown tool")
 		}
 		return d.AWS.Call(ctx, tool.Config, secretRaw, args)
+	case "gcp_http":
+		if name != "request" {
+			return "", fail.New(404, "unknown tool")
+		}
+		return d.GCP.Call(ctx, tool.Config, secretRaw, args)
+	case "azure_http":
+		if name != "request" {
+			return "", fail.New(404, "unknown tool")
+		}
+		return d.Azure.Call(ctx, tool.Config, secretRaw, args)
 	default:
 		return "", fail.New(400, "unknown tool kind")
 	}
