@@ -85,6 +85,9 @@ func (s *Store) ResetForTests(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	if _, err := s.pool.Exec(ctx, `DELETE FROM organizations WHERE slug <> 'default'`); err != nil {
+		return err
+	}
 	return s.EnsureDefaultOrg(ctx)
 }
 

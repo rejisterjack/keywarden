@@ -26,6 +26,14 @@ An `mcp_stdio` tool runs on the proxy machine as the proxy's user. Demo mode dis
 
 The hosted demo refuses secrets that are not part of the seeded fictional set, and the locked demo refuses agent, tool, and policy edits. Do not type a real password, DSN, or API token into it.
 
+## MCP is POST-only
+
+The data plane is Streamable HTTP over `POST /mcp`. `GET /mcp` is not an SSE event stream: clients that require server-sent events for session resume or server-push notifications are not supported. Use a client that speaks POST-based Streamable HTTP (JSON-RPC request/response). `DELETE /mcp` is accepted as a no-op session end.
+
 ## Out of scope
 
-Keywarden is not a secrets manager for the rest of your company, a SIEM, or a replacement for cloud IAM. The rego policy engine covers the same decision vocabulary as the rules evaluator; it does not bring the wider OPA ecosystem (bundles, sidecars, data APIs) with it. The `http` and `aws_http` tool kinds cover ordinary HTTPS and SigV4-signed AWS calls; they are not a general IAM control plane, and GCP/Azure connectors are not included.
+Keywarden is not a secrets manager for the rest of your company, a SIEM, or a replacement for cloud IAM. The rego policy engine covers the same decision vocabulary as the rules evaluator; it does not bring the wider OPA ecosystem (bundles, sidecars, data APIs) with it.
+
+The `http` and `aws_http` tool kinds cover ordinary HTTPS and SigV4-signed AWS calls. `gcp_http` and `azure_http` are basic HTTPS helpers that inject a sealed Bearer `access_token` (plus optional extra headers). They are not Cloud IAM, Workload Identity, Entra ID, or ARM role assignment. You still mint and rotate the token outside Keywarden.
+
+**Won't-build (closed):** Full OPA (bundles/sidecars/data APIs), IdP integration, and SIEM shipping stay out of product scope. Rego-in-process and the audit chain remain the governance surface.

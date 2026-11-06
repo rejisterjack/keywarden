@@ -65,6 +65,39 @@ func (s *Store) GetOrganization(ctx context.Context, id uuid.UUID) (Organization
 	return org, nil
 }
 
+// ListOrganizations returns every tenant. Used by the bootstrap operator.
+func (s *Store) ListOrganizations(ctx context.Context) ([]Organization, error) {
+	rows, err := s.pool.Query(ctx, `
+		SELECT id, slug, name, created_at FROM organizations ORDER BY created_at ASC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []Organization{}
+	for rows.Next() {
+		var org Organization
+		if err := rows.Scan(&org.ID, &org.Slug, &org.Name, &org.CreatedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, org)
+	}
+	return out, rows.Err()
+}
+
+// AuthenticateBootstrap reports whether the bearer is the process admin token.
+// The bootstrap token can create organizations and issue their first kwa_ tokens
+// even when KEYWARDEN_SINGLE_TENANT=0 (where the env token is not an org admin).
+func AuthenticateBootstrap(bearer, envToken string) bool {
+	bearer = strings.TrimSpace(bearer)
+	envToken = strings.TrimSpace(envToken)
+	if bearer == "" || envToken == "" {
+		return false
+	}
+	a := sha256.Sum256([]byte(bearer))
+	b := sha256.Sum256([]byte(envToken))
+	return subtle.ConstantTimeCompare(a[:], b[:]) == 1
+}
+
 // IssueOrgAdminToken returns a plaintext bearer once. The hash is stored.
 func (s *Store) IssueOrgAdminToken(ctx context.Context, orgID uuid.UUID, label string) (string, error) {
 	if _, err := s.GetOrganization(ctx, orgID); err != nil {

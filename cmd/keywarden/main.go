@@ -37,6 +37,8 @@ func main() {
 		err = runSeed()
 	case "task":
 		err = task(os.Args[2:])
+	case "org":
+		err = orgCmd(os.Args[2:])
 	case "policy":
 		err = policyCmd(os.Args[2:])
 	case "audit":
@@ -62,11 +64,14 @@ Usage:
   keywarden seed
   keywarden task create --agent <id> [--ttl 15m] [--tool <id>]
   keywarden task revoke <task-id>
+  keywarden org create --slug <slug> --name <name> [--label admin]
+  keywarden org token --org <id> [--label admin]
   keywarden policy apply <file>
   keywarden audit verify
 
 serve and seed read KEYWARDEN_DATABASE_URL, KEYWARDEN_ADMIN_TOKEN, and KEYWARDEN_VAULT_KEY.
 The other commands call KEYWARDEN_URL (default http://127.0.0.1:8080) with KEYWARDEN_ADMIN_TOKEN.
+org create requires the process admin token. org token accepts that token or an org kwa_… token.
 `)
 }
 

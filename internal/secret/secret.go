@@ -22,6 +22,7 @@ type Secret struct {
 	SessionToken    string            `json:"session_token,omitempty"`
 	RoleArn         string            `json:"role_arn,omitempty"`
 	ExternalID      string            `json:"external_id,omitempty"`
+	AccessToken     string            `json:"access_token,omitempty"`
 }
 
 // HTTPConfig is the public configuration of an mcp_http tool.
@@ -103,6 +104,16 @@ func Validate(kind string, config, secretRaw []byte, demo bool, fixtureURL, orde
 			return fail.New(400, "aws tools are disabled in demo mode")
 		}
 		return ValidateAWS(config, sec)
+	case "gcp_http":
+		if demo {
+			return fail.New(400, "gcp tools are disabled in demo mode")
+		}
+		return validateGCPHTTP(config, sec)
+	case "azure_http":
+		if demo {
+			return fail.New(400, "azure tools are disabled in demo mode")
+		}
+		return validateAzureHTTP(config, sec)
 	default:
 		return fail.New(400, "unknown tool kind")
 	}

@@ -62,7 +62,7 @@ Keywarden addresses tool calls that flow through a controlled path: scoped acces
 
 - Governs traffic that routes through Keywarden; cannot revoke access the agent already has elsewhere
 - Not a full identity provider, SIEM, or secrets manager replacement—focused on agent tool governance
-- Not every cloud IAM surface: AWS SigV4/`aws_http` is supported; GCP and Azure connectors are follow-ons
+- Not every cloud IAM surface: AWS SigV4/`aws_http` plus basic GCP/Azure Bearer HTTPS helpers (`gcp_http`, `azure_http`); not full Cloud IAM / Entra / ARM
 
 ## Deployment
 

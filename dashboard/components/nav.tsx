@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const links = [
   ["/", "Approvals"],
+  ["/tasks", "Tasks"],
   ["/audit", "Audit"],
   ["/agents", "Agents"],
   ["/tools", "Tools"],
