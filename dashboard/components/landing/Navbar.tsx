@@ -26,7 +26,7 @@ export function Navbar({ hasSession }: { hasSession: boolean }) {
             </svg>
           </div>
           <span className="kw-brand-name">Keywarden</span>
-          <span className="kw-badge-pill">v0.1.0</span>
+          <span className="kw-badge-pill">v0.1.1</span>
         </Link>
 
         <nav className="kw-nav-links" aria-label="Main Navigation">

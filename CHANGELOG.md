@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+- The release workflow publishes only the proxy binaries.
+- CI runs the Compose quickstart and a dashboard smoke against a running proxy.
+- Boundary tests cover auth, policy, SQL, approval hashes, and task tokens that must not appear in the task list.
+
 ## 0.1.0
 
 First release of the least-privilege proxy for agent tool calls.

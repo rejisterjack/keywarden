@@ -3,7 +3,7 @@ WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-ARG VERSION=0.1.0
+ARG VERSION=0.1.1
 RUN ver="${VERSION#v}" && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X github.com/rejisterjack/keywarden/internal/version.Version=${ver}" -o /out/keywarden ./cmd/keywarden
 
 FROM gcr.io/distroless/static-debian12:nonroot

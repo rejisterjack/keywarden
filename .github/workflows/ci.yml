@@ -64,3 +64,43 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build proxy image
         run: docker build -f deploy/Dockerfile -t keywarden:ci .
+
+  journey:
+    needs: image
+    runs-on: ubuntu-latest
+    env:
+      COMPOSE_PROJECT_NAME: keywarden
+    steps:
+      - uses: actions/checkout@v4
+      - name: Boot the demo
+        run: docker compose -f deploy/compose/docker-compose.yml up --build -d
+      - name: Quickstart
+        run: KEYWARDEN_ADMIN_TOKEN=local-dev-admin-token ./scripts/quickstart.sh
+      - name: Dashboard that cannot reach the proxy
+        run: |
+          docker run -d --name keywarden-dashboard-down \
+            -e KEYWARDEN_API_URL=http://127.0.0.1:9 \
+            -e KEYWARDEN_ADMIN_TOKEN=local-dev-admin-token \
+            -e KEYWARDEN_DASHBOARD_PASSWORD=local-demo-password \
+            -e KEYWARDEN_SESSION_SECRET=local-demo-session-secret \
+            -p 3002:3000 \
+            keywarden-dashboard
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+      - name: Playwright
+        working-directory: dashboard
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
+          PLAYWRIGHT_DOWN_URL: http://127.0.0.1:3002
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npx playwright test
+      - name: Stop
+        if: always()
+        run: |
+          docker rm -f keywarden-dashboard-down || true
+          docker compose -f deploy/compose/docker-compose.yml down -v
