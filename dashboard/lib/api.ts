@@ -7,6 +7,14 @@ export type Meta = {
   default_org?: string;
 };
 
+export async function loadList<T>(path: string): Promise<{ data: T | null; error: string | null }> {
+  try {
+    return { data: await kw<T>(path), error: null };
+  } catch (err) {
+    return { data: null, error: err instanceof KwError ? err.message : "request failed" };
+  }
+}
+
 export type Agent = { id: string; name: string; created_at: string };
 export type Tool = {
   id: string;
@@ -105,7 +113,14 @@ export async function loadMeta(): Promise<Meta> {
     const res = await fetch(base + "/v1/meta", { cache: "no-store" });
     if (!res.ok) return { demo: false, demo_lock: false };
     const body = (await res.json()) as Meta;
-    return { demo: Boolean(body.demo), demo_lock: Boolean(body.demo_lock), version: body.version, name: body.name };
+    return {
+      demo: Boolean(body.demo),
+      demo_lock: Boolean(body.demo_lock),
+      single_tenant: body.single_tenant,
+      default_org: body.default_org,
+      version: body.version,
+      name: body.name,
+    };
   } catch {
     return { demo: false, demo_lock: false };
   }

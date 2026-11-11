@@ -1,9 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { kw, KwError, loadMeta } from "@/lib/api";
 import { clearSession, passwordMatches, requireSession, startSession } from "@/lib/session";
+
+const issuedCookie = "kw_issued_token";
 
 function fail(path: string, err: unknown): never {
   const message = err instanceof KwError ? err.message : "request failed";
@@ -16,7 +19,7 @@ export async function login(formData: FormData) {
     redirect("/login?error=" + encodeURIComponent("Wrong password"));
   }
   await startSession();
-  redirect("/");
+  redirect("/approvals");
 }
 
 export async function logout() {
@@ -55,7 +58,14 @@ export async function createTask(formData: FormData) {
   }
   revalidatePath("/tasks");
   if (token) {
-    redirect(`/tasks?token=${encodeURIComponent(token)}`);
+    const jar = await cookies();
+    jar.set(issuedCookie, token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 120,
+    });
   }
   redirect("/tasks");
 }
@@ -82,9 +92,9 @@ export async function decide(formData: FormData) {
       body: JSON.stringify({ decision, comment }),
     });
   } catch (err) {
-    fail("/", err);
+    fail("/approvals", err);
   }
-  revalidatePath("/");
+  revalidatePath("/approvals");
 }
 
 export async function createAgent(formData: FormData) {

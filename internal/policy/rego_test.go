@@ -102,6 +102,22 @@ func TestEvaluateRegoMalformedDecisionDenies(t *testing.T) {
 	}
 }
 
+func TestEvaluateRegoV1Syntax(t *testing.T) {
+	const module = `package keywarden
+
+import rego.v1
+
+decision := {"effect": "allow", "rule_id": "v1-read"} if {
+	input.sql_class == "read"
+}
+`
+	doc := Document{Version: 1, Engine: "rego", Rego: module}
+	got := doc.Evaluate(Input{AgentID: "support", ToolID: "orders", Name: "query", SQLClass: "read"})
+	if got.Effect != Allow || got.RuleID != "v1-read" {
+		t.Fatalf("v1 read = %+v", got)
+	}
+}
+
 func TestVisibleRego(t *testing.T) {
 	doc := Document{Version: 1, Engine: "rego", Rego: demoRego}
 	if !doc.Visible("support", "orders", "query") {

@@ -1,9 +1,10 @@
-FROM golang:1.27.3 AS build
+FROM golang:1.27.4 AS build
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/keywarden ./cmd/keywarden
+ARG VERSION=0.1.0
+RUN ver="${VERSION#v}" && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X github.com/rejisterjack/keywarden/internal/version.Version=${ver}" -o /out/keywarden ./cmd/keywarden
 
 FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=build /out/keywarden /keywarden

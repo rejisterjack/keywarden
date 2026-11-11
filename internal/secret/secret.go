@@ -225,10 +225,6 @@ func strictDecoder(raw []byte) *json.Decoder {
 	return dec
 }
 
-func jsonMarshal(v any) ([]byte, error) {
-	return json.Marshal(v)
-}
-
 func sameEndpoint(a, b string) bool {
 	ua, err1 := url.Parse(a)
 	ub, err2 := url.Parse(b)

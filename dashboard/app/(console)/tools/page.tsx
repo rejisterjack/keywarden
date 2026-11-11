@@ -1,5 +1,6 @@
+import { ProxyDown } from "@/components/proxy-down";
 import { createTool, deleteTool } from "@/lib/actions";
-import { kw, loadMeta, pretty, when, type Tool } from "@/lib/api";
+import { loadList, loadMeta, pretty, when, type Tool } from "@/lib/api";
 
 export default async function ToolsPage({
   searchParams,
@@ -7,7 +8,11 @@ export default async function ToolsPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
-  const [meta, body] = await Promise.all([loadMeta(), kw<{ tools: Tool[] }>("/v1/tools")]);
+  const [meta, loaded] = await Promise.all([loadMeta(), loadList<{ tools: Tool[] }>("/v1/tools")]);
+  if (loaded.error || !loaded.data) {
+    return <ProxyDown message={loaded.error ?? "request failed"} />;
+  }
+  const body = loaded.data;
   return (
     <>
       <h1>Tools</h1>

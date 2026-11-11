@@ -21,6 +21,7 @@ import (
 	"github.com/rejisterjack/keywarden/internal/store"
 	"github.com/rejisterjack/keywarden/internal/upstream"
 	"github.com/rejisterjack/keywarden/internal/vault"
+	"github.com/rejisterjack/keywarden/internal/version"
 	"log/slog"
 )
 
@@ -43,6 +44,9 @@ func main() {
 		err = policyCmd(os.Args[2:])
 	case "audit":
 		err = auditCmd(os.Args[2:])
+	case "version", "-v", "--version":
+		fmt.Println(version.Version)
+		return
 	case "-h", "--help", "help":
 		usage()
 		return
@@ -68,6 +72,7 @@ Usage:
   keywarden org token --org <id> [--label admin]
   keywarden policy apply <file>
   keywarden audit verify
+  keywarden version
 
 serve and seed read KEYWARDEN_DATABASE_URL, KEYWARDEN_ADMIN_TOKEN, and KEYWARDEN_VAULT_KEY.
 The other commands call KEYWARDEN_URL (default http://127.0.0.1:8080) with KEYWARDEN_ADMIN_TOKEN.
@@ -126,7 +131,7 @@ func listen(ctx context.Context, cfg config.Config, api *httpapi.Server, log *sl
 		Handler:           api.Handler(),
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       30 * time.Second,
-		WriteTimeout:      11 * time.Minute,
+		WriteTimeout:      12 * time.Minute, // longest approval wait is 10 minutes, plus the upstream call
 		IdleTimeout:       2 * time.Minute,
 		BaseContext: func(net.Listener) context.Context {
 			return ctx

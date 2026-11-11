@@ -1,5 +1,6 @@
+import { ProxyDown } from "@/components/proxy-down";
 import { decide } from "@/lib/actions";
-import { kw, pretty, when, type Approval } from "@/lib/api";
+import { loadList, pretty, when, type Approval } from "@/lib/api";
 
 export default async function ApprovalsPage({
   searchParams,
@@ -7,7 +8,11 @@ export default async function ApprovalsPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
-  const body = await kw<{ approvals: Approval[] }>("/v1/approvals?status=pending");
+  const loaded = await loadList<{ approvals: Approval[] }>("/v1/approvals?status=pending");
+  if (loaded.error || !loaded.data) {
+    return <ProxyDown message={loaded.error ?? "request failed"} />;
+  }
+  const body = loaded.data;
   return (
     <>
       <h1>Approvals</h1>
