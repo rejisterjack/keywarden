@@ -114,6 +114,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: dist
+          pattern: keywarden-*
           merge-multiple: true
       - name: Publish GitHub release
         env:
