@@ -77,3 +77,14 @@ Work through this once the three services exist. The target hostname is `keyward
 Run Compose, or the same Docker image, with `KEYWARDEN_DEMO` unset. Generate a vault key and an admin token that have never been committed. Put the proxy on a private network. Terminate TLS in front of it. Keep stdio tools off unless you intend to run child processes as the proxy user.
 
 The image listens with `/keywarden serve`. Migrations run on startup.
+
+## Releases
+
+A git tag `v*` builds the proxy for Linux and macOS (amd64 and arm64) and publishes a multi-arch image:
+
+```
+ghcr.io/rejisterjack/keywarden:<tag>
+ghcr.io/rejisterjack/keywarden:latest
+```
+
+The binary's version string is the tag without the leading `v`. `latest` tracks the newest tag. The dashboard stays a separate image, built from `dashboard/Dockerfile`.

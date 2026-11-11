@@ -32,7 +32,7 @@ func (g GCPHTTP) List(ctx context.Context, config, secretRaw []byte) ([]mcp.Tool
 
 // Call executes one Bearer-authenticated request.
 func (g GCPHTTP) Call(ctx context.Context, config, secretRaw, args []byte) (string, error) {
-	return cloudCall(ctx, "gcp", PlainHTTP{HTTP: g.HTTP}, config, secretRaw, args)
+	return cloudCall(ctx, "gcp", PlainHTTP(g), config, secretRaw, args)
 }
 
 // List returns the single request tool.
@@ -42,7 +42,7 @@ func (a AzureHTTP) List(ctx context.Context, config, secretRaw []byte) ([]mcp.To
 
 // Call executes one Bearer-authenticated request.
 func (a AzureHTTP) Call(ctx context.Context, config, secretRaw, args []byte) (string, error) {
-	return cloudCall(ctx, "azure", PlainHTTP{HTTP: a.HTTP}, config, secretRaw, args)
+	return cloudCall(ctx, "azure", PlainHTTP(a), config, secretRaw, args)
 }
 
 func cloudList(label string, config, secretRaw []byte) ([]mcp.Tool, error) {
@@ -69,11 +69,7 @@ func cloudCall(ctx context.Context, kind string, plain PlainHTTP, config, secret
 		headers[k] = v
 	}
 	headers["Authorization"] = "Bearer " + sec.AccessToken
-	plainCfg, err := json.Marshal(secret.PlainHTTPConfig{
-		BaseURL:        cfg.BaseURL,
-		AllowedMethods: cfg.AllowedMethods,
-		PathPrefix:     cfg.PathPrefix,
-	})
+	plainCfg, err := json.Marshal(secret.PlainHTTPConfig(cfg))
 	if err != nil {
 		return "", err
 	}

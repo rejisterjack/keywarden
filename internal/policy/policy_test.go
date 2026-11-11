@@ -28,6 +28,7 @@ func TestClassify(t *testing.T) {
 		{"SELECT drop_column FROM demo.orders", "read"},
 		{"SELECT * INTO demo.copy FROM demo.orders", "destructive"},
 		{"", "destructive"},
+		{"-- just a comment", "destructive"},
 		{"SELECT pg_read_file('/etc/passwd')", "read"},
 	}
 	for _, tc := range cases {
@@ -99,6 +100,17 @@ func TestVisibleHidesDeniedOnlyTools(t *testing.T) {
 	}
 	if doc.Visible("other", "orders", "query") {
 		t.Fatal("other agent")
+	}
+}
+
+func TestParseRejectsTimeoutBounds(t *testing.T) {
+	_, _, err := Parse([]byte(`{"version":1,"rules":[{"id":"slow","match":{},"effect":"require_approval","timeout_seconds":601}]}`))
+	if err == nil || !strings.Contains(err.Error(), "600") {
+		t.Fatal(err)
+	}
+	_, _, err = Parse([]byte(`{"version":1,"rules":[{"id":"slow","match":{},"effect":"allow","timeout_seconds":30}]}`))
+	if err == nil || !strings.Contains(err.Error(), "timeout") {
+		t.Fatal(err)
 	}
 }
 

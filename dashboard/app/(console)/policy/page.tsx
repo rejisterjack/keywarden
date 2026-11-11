@@ -1,5 +1,6 @@
+import { ProxyDown } from "@/components/proxy-down";
 import { applyPolicy } from "@/lib/actions";
-import { kw, KwError, loadMeta, pretty, when, type Policy } from "@/lib/api";
+import { loadList, loadMeta, pretty, when, type Policy } from "@/lib/api";
 
 const starter = `{
   "version": 1,
@@ -19,10 +20,14 @@ export default async function PolicyPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
-  const [meta, history] = await Promise.all([
+  const [meta, loaded] = await Promise.all([
     loadMeta(),
-    kw<{ policies: Policy[] }>("/v1/policies"),
+    loadList<{ policies: Policy[] }>("/v1/policies"),
   ]);
+  if (loaded.error || !loaded.data) {
+    return <ProxyDown message={loaded.error ?? "request failed"} />;
+  }
+  const history = loaded.data;
   const active = history.policies.find((item) => item.active) ?? null;
   return (
     <>

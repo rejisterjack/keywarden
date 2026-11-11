@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
-	"github.com/open-policy-agent/opa/rego"
+	"github.com/open-policy-agent/opa/v1/ast"
+	"github.com/open-policy-agent/opa/v1/rego"
 )
 
 // regoTimeout bounds one policy evaluation. A slow module denies the call
@@ -15,11 +17,34 @@ const regoTimeout = 2 * time.Second
 
 // compileRego parses a module so invalid policies fail at apply time.
 func compileRego(module string) error {
-	_, err := rego.New(
-		rego.Query("data.keywarden.decision"),
-		rego.Module("policy.rego", module),
-	).PrepareForEval(context.Background())
+	_, err := prepareRego(context.Background(), "data.keywarden.decision", module)
 	return err
+}
+
+// prepareRego compiles a module with the supported OPA v1 API.
+// Rego v1 is tried first. Modules written in the older syntax, including
+// those that opt in with `import rego.v1`, still compile.
+func prepareRego(ctx context.Context, query, module string) (rego.PreparedEvalQuery, error) {
+	prepared, v1Err := rego.New(
+		rego.Query(query),
+		rego.Module("policy.rego", module),
+		rego.SetRegoVersion(ast.RegoV1),
+	).PrepareForEval(ctx)
+	if v1Err == nil {
+		return prepared, nil
+	}
+	prepared, v0Err := rego.New(
+		rego.Query(query),
+		rego.Module("policy.rego", module),
+		rego.SetRegoVersion(ast.RegoV0),
+	).PrepareForEval(ctx)
+	if v0Err == nil {
+		return prepared, nil
+	}
+	if strings.Contains(module, "import rego.v1") || strings.Contains(module, " if {") || strings.Contains(module, " if{") {
+		return rego.PreparedEvalQuery{}, v1Err
+	}
+	return rego.PreparedEvalQuery{}, v0Err
 }
 
 // evaluateVisible runs data.keywarden.visible when the module defines it.
@@ -28,10 +53,7 @@ func compileRego(module string) error {
 func evaluateVisible(module string, in Input) (bool, bool) {
 	ctx, cancel := context.WithTimeout(context.Background(), regoTimeout)
 	defer cancel()
-	q, err := rego.New(
-		rego.Query("data.keywarden.visible"),
-		rego.Module("policy.rego", module),
-	).PrepareForEval(ctx)
+	q, err := prepareRego(ctx, "data.keywarden.visible", module)
 	if err != nil {
 		return false, false
 	}
@@ -60,10 +82,7 @@ func inputMap(in Input) map[string]any {
 func evaluateRego(module string, in Input) Decision {
 	ctx, cancel := context.WithTimeout(context.Background(), regoTimeout)
 	defer cancel()
-	q, err := rego.New(
-		rego.Query("data.keywarden.decision"),
-		rego.Module("policy.rego", module),
-	).PrepareForEval(ctx)
+	q, err := prepareRego(ctx, "data.keywarden.decision", module)
 	if err != nil {
 		return Decision{Effect: Deny, Reason: "policy module failed to compile: " + err.Error()}
 	}

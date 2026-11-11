@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const links = [
-  ["/", "Approvals"],
+  ["/approvals", "Approvals"],
   ["/tasks", "Tasks"],
   ["/audit", "Audit"],
   ["/agents", "Agents"],
@@ -21,6 +21,11 @@ export function Nav() {
           {label}
         </Link>
       ))}
+      <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+        <Link href="/" style={{ opacity: 0.75, fontSize: "13px" }}>
+          ← View Landing Page
+        </Link>
+      </div>
     </nav>
   );
 }

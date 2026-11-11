@@ -44,6 +44,7 @@ export KEYWARDEN_ADMIN_TOKEN=local-dev-admin-token
 keywarden task create --agent support --ttl 15m
 keywarden policy apply examples/policy.json
 keywarden audit verify
+keywarden version
 ```
 
 `serve` and `seed` talk to Postgres directly. `task`, `org`, `policy`, and `audit` talk to a running proxy.
@@ -88,7 +89,7 @@ Compose defaults to one organization (`KEYWARDEN_SINGLE_TENANT=1`). Agents, tool
 
 ## Develop
 
-Go 1.27.3. Integration tests need Postgres:
+Go 1.27.4. Integration tests need Postgres:
 
 ```bash
 export KEYWARDEN_TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/keywarden?sslmode=disable

@@ -93,6 +93,16 @@ func TestPlainHTTPRejectsPathOutsidePrefix(t *testing.T) {
 	}
 }
 
+func TestPlainHTTPRejectsLargeBody(t *testing.T) {
+	p := PlainHTTP{}
+	secret := []byte(`{"headers":{}}`)
+	body := strings.Repeat("a", httpMaxBody+1)
+	_, err := p.Call(context.Background(), httpConfig("https://api.example.com", "/v1", "POST"), secret, []byte(`{"method":"POST","path":"/v1/ping","body":"`+body+`"}`))
+	if err == nil {
+		t.Fatal("expected a body limit rejection")
+	}
+}
+
 func TestPlainHTTPRejectsTraversal(t *testing.T) {
 	p := PlainHTTP{}
 	secret := []byte(`{"headers":{}}`)

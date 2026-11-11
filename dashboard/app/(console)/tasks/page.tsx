@@ -1,13 +1,20 @@
+import { ProxyDown } from "@/components/proxy-down";
 import { createTask, revokeTask } from "@/lib/actions";
-import { kw, when, type Task } from "@/lib/api";
+import { loadList, when, type Task } from "@/lib/api";
+import { cookies } from "next/headers";
 
 export default async function TasksPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; token?: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
-  const { error, token } = await searchParams;
-  const body = await kw<{ tasks: Task[] }>("/v1/tasks");
+  const { error } = await searchParams;
+  const issued = (await cookies()).get("kw_issued_token")?.value ?? "";
+  const loaded = await loadList<{ tasks: Task[] }>("/v1/tasks");
+  if (loaded.error || !loaded.data) {
+    return <ProxyDown message={loaded.error ?? "request failed"} />;
+  }
+  const body = loaded.data;
   return (
     <>
       <h1>Tasks</h1>
@@ -16,11 +23,11 @@ export default async function TasksPage({
         <code>POST /mcp</code>. Revoking it stops new calls immediately.
       </p>
       {error ? <p className="error">{error}</p> : null}
-      {token ? (
+      {issued ? (
         <article className="card">
           <h2>Issued token</h2>
-          <p className="lede">Shown once. Copy it into the agent configuration now.</p>
-          <pre>{token}</pre>
+          <p className="lede">Copy it now. It stays on this page for two minutes, and it is not put in the address bar.</p>
+          <pre>{issued}</pre>
         </article>
       ) : null}
       {body.tasks.length === 0 ? <p className="empty">No tasks yet.</p> : null}

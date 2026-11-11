@@ -1,5 +1,6 @@
+import { ProxyDown } from "@/components/proxy-down";
 import { createAgent, deleteAgent } from "@/lib/actions";
-import { kw, loadMeta, when, type Agent } from "@/lib/api";
+import { loadList, loadMeta, when, type Agent } from "@/lib/api";
 
 export default async function AgentsPage({
   searchParams,
@@ -7,7 +8,11 @@ export default async function AgentsPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
-  const [meta, body] = await Promise.all([loadMeta(), kw<{ agents: Agent[] }>("/v1/agents")]);
+  const [meta, loaded] = await Promise.all([loadMeta(), loadList<{ agents: Agent[] }>("/v1/agents")]);
+  if (loaded.error || !loaded.data) {
+    return <ProxyDown message={loaded.error ?? "request failed"} />;
+  }
+  const body = loaded.data;
   return (
     <>
       <h1>Agents</h1>

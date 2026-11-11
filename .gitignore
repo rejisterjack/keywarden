@@ -28,6 +28,8 @@ go.work.sum
 dashboard/node_modules/
 dashboard/.next/
 dashboard/tsconfig.tsbuildinfo
+dashboard/test-results/
+dashboard/playwright-report/
 
 # macOS
 .DS_Store
