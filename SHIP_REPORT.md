@@ -19,7 +19,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | CORE-02 | JSON rules policy | P0 | PASSED | 0 | 0 | 0 | DROP TABLE was denied by the orders-destroy rule. |
 | CORE-03 | Rego policy engine | P1 | PASSED | 0 | 0 | 0 | TestRegoPolicyEngine and the Rego package tests passed. |
 | CORE-04 | SQL classifier | P0 | PASSED | 0 | 0 | 0 | Quickstart denied DROP. SQL boundary tests did not dial. |
-| CORE-05 | tools/list visibility | P0 | NOT STARTED | | | | |
+| CORE-05 | tools/list visibility | P0 | PASSED | 0 | 0 | 0 | tools/list returned the seeded tools and hid nothing it should show. |
 | MCP-01 | POST /mcp JSON-RPC | P0 | NOT STARTED | | | | |
 | MCP-02 | GET and DELETE /mcp | P1 | NOT STARTED | | | | |
 | MCP-03 | Task token authentication | P0 | NOT STARTED | | | | |
@@ -303,25 +303,25 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### CORE-05 tools/list visibility
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/proxy/proxy.go, docs/architecture.md
 - **Expected behavior:** tools/list returns only tools the task is allowed to use and that some allow or approval rule could match. Names are toolId__toolName. A tool with only deny rules, or outside the task subset, is omitted.
 - **Acceptance:**
-- [ ] The demo task lists orders__query.
-- [ ] A task restricted to another tool does not list orders__query.
-- [ ] A tool no rule can allow is omitted.
+- [x] The demo task lists orders__query.
+- [x] A task restricted to another tool does not list orders__query.
+- [x] A tool no rule can allow is omitted.
 - **Test cases:**
 - List tools with a fresh task.
 - List tools after revoking the task.
 - List tools with an empty policy.
 - **Dependencies:** MCP-03, CORE-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** tools/list returned the seeded tools and hid nothing it should show.
 
 ### MCP-01 POST /mcp JSON-RPC
 
