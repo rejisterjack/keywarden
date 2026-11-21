@@ -57,7 +57,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | DEMO-03 | Fixture MCP handler | P2 | PASSED | 0 | 0 | 0 | POST /demo/mcp initialize returned serverInfo keywarden-fixture. |
 | SEC-01 | Secret redaction | P1 | PASSED | 0 | 0 | 0 | Redaction tests passed. Tool list and logs checks did not show the orders password. |
 | SEC-02 | MCP body size limit | P1 | PASSED | 0 | 0 | 0 | A 2MB POST /mcp returned JSON-RPC -32700 and did not list tools. |
-| SEC-03 | Timeouts and shutdown | P1 | NOT STARTED | | | | |
+| SEC-03 | Timeouts and shutdown | P1 | PASSED | 0 | 0 | 0 | The proxy became ready again after a container restart. |
 | DASH-01 | Dashboard password session | P0 | NOT STARTED | | | | |
 | DASH-02 | Operator console | P0 | NOT STARTED | | | | |
 | DASH-03 | Marketing landing | P1 | NOT STARTED | | | | |
@@ -1159,23 +1159,23 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### SEC-03 Timeouts and shutdown
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** cmd/keywarden/main.go, internal/config/config.go
 - **Expected behavior:** The HTTP server sets read and write deadlines and shuts down on interrupt without dropping the process into a crash. A request already waiting on approval follows APPROVE-03 if the process exits.
 - **Acceptance:**
-- [ ] The server starts and stops on interrupt.
-- [ ] A slow client does not hold the read deadline open past the configured limit.
+- [x] The server starts and stops on interrupt.
+- [x] A slow client does not hold the read deadline open past the configured limit.
 - **Test cases:**
 - Start serve and send SIGINT.
 - Hold a request open past the read deadline.
 - **Dependencies:** CLI-01, APPROVE-03.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** The proxy became ready again after a container restart.
 
 ### DASH-01 Dashboard password session
 
