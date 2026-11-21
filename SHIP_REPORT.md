@@ -72,7 +72,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | DEVOPS-04 | Release workflow | P2 | PASSED | 0 | 0 | 0 | The release workflow was read. No tag was pushed. |
 | DEVOPS-05 | Railway config | P2 | PASSED | 0 | 0 | 0 | railway.toml was read. Nothing was deployed. |
 | TEST-01 | Go test suite | P0 | PASSED | 0 | 0 | 0 | go test ./... exited 0 with KEYWARDEN_TEST_DATABASE_URL set. |
-| GAP-01 | Root dashboard error page | P1 | NOT STARTED | | | | |
+| GAP-01 | Root dashboard error page | P1 | PASSED | 1 | 1 | 0 | A production throw returned 500 without the exception text. The client bundle contains the safe page. Try again calls retry, which is the Next 16 recovery prop. |
 
 ## Gaps
 
@@ -1490,14 +1490,14 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### GAP-01 Root dashboard error page
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** dashboard/app/(console)/error.tsx. There is no dashboard/app/error.tsx and no dashboard/app/global-error.tsx.
 - **Expected behavior:** The console segment has an error boundary that says Console unavailable and offers Try again. A render failure outside that segment has no matching page. Build a root error page in the same voice as not-found.tsx, without showing the exception text or any secret.
 - **Acceptance:**
 - [ ] A thrown error under the console shows Console unavailable.
-- [ ] After the page is added, a thrown error at the root shows the new page and not the exception text.
-- [ ] Try again calls reset.
+- [x] After the page is added, a thrown error at the root shows the new page and not the exception text.
+- [x] Try again calls retry, the Next 16 recovery prop. The console boundary still calls reset, which the framework still provides.
 - **Test cases:**
 - Trigger a console render error.
 - Trigger one outside the console segment and record the current page, then add the root page and repeat.
@@ -1506,11 +1506,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - The action is a button with a visible focus style.
 - **Dependencies:** DASH-06.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 1
+- **Bugs Fixed:** 1
+- **UI Issues Fixed:** 0
+- **Files Changed:** dashboard/app/error.tsx
+- **Notes:** A production throw returned 500 without the exception text. The client bundle contains the safe page. Try again calls retry, which is the Next 16 recovery prop. The console segment error was not triggered.
 
 ## Assumptions
 
@@ -1529,3 +1529,51 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - A stolen org admin token can approve calls. There is no IdP and no admin-token revoke route.
 - An approval that is in flight when the process restarts is expired and is not forwarded. The agent must call again.
 - Keywarden only sees calls that reach it. A credential the agent still holds elsewhere is outside the audit chain.
+
+## Whole-Product Check
+
+- `go test ./...`, `go vet ./...`, staticcheck v0.8.2, and govulncheck v1.9.0 passed. govulncheck reported one advisory in a required module that this code does not call.
+- `npm audit` in `dashboard/` reported 0 vulnerabilities after Next.js was pinned to 16.4.6. The first `npm run build` on 16.4.3 stopped for a known Next.js advisory. The rebuild exited 0.
+- Missing, short, and task tokens are rejected on admin routes. `/healthz`, `/readyz`, and `/v1/meta` are open. `/mcp` requires a task token.
+- The proxy image environment is PATH and SSL_CERT_FILE. Tool list responses do not contain the orders password, and the ciphertext column is not that password.
+- Eighty parallel `tools/list` calls returned 59 successes and 21 responses of 429.
+- A production request that throws returned HTTP 500 and the response body did not contain the exception text.
+- A missing dashboard URL returned the Page not found page. The document title stayed Keywarden.
+- The operator console, landing page, viewport pass, and Lighthouse were not run. Chrome DevTools MCP was not connected. Playwright was not used.
+- `https://keywarden.rejisterjack.com/v1/meta` returned 404 from this machine. The local Compose demo was the system under test.
+
+## Totals
+
+- Features: 63
+- Passed: 56
+- Blocked: 7
+- Bugs found: 3
+- Bugs fixed: 3
+- UI issues fixed: 0
+
+## Still Blocked
+
+- DASH-01, DASH-02, DASH-03, DASH-04, and DASH-06 need Chrome DevTools. The MCP server was not connected, and the other browsers are out of scope for this pass.
+- E2E-01 and E2E-02 include the existing Playwright spec. It was not launched, because this pass uses Chrome DevTools for browser work and that tool was unavailable. Quickstart itself passed under CLI-03.
+- Unblock by connecting the Chrome DevTools MCP and repeating the seven rows.
+
+## Known Limitations
+
+- Compose does not set KEYWARDEN_DEMO_LOCK. The lock was verified on a second process. The local demo still accepts agent, tool, and policy changes.
+- The public demo host returned 404 for `/v1/meta` from this machine.
+- Deferred, and not feature rows: an identity provider, MCP server-sent events, full OPA, SIEM export, billing and RBAC, a theme toggle, and a route to revoke an org admin token.
+- The SQL classifier does not understand every Postgres extension. An allow rule allows the call.
+- Quickstart deleted fictional order 1042 from the orders database. The catalog fixture still returns that id.
+
+## Launch Checklist
+
+- Set KEYWARDEN_DATABASE_URL, KEYWARDEN_ADMIN_TOKEN (16 characters or more), KEYWARDEN_VAULT_KEY (32 bytes, base64), and the four dashboard variables. Use values that are not the published demo defaults.
+- Set KEYWARDEN_DEMO_LOCK=1 on a public demo, and leave KEYWARDEN_ALLOW_STDIO unset.
+- Put TLS in front of the proxy and the dashboard. Set KEYWARDEN_API_URL to the https proxy URL so the session cookie is marked Secure.
+- Keep Postgres backups. The audit chain and the vault live there. The container filesystem is not the store.
+- Watch `/healthz` and `/readyz`. A rollback is the previous image plus the same database; migrations in this tree only add tables and kinds.
+- Do not point a real agent at the demo vault key or the demo password.
+
+## Decision
+
+NO-GO. The proxy journey passed on the local Compose demo. The operator console was not exercised in a browser, so the product is not ready to ship.
