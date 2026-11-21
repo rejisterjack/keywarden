@@ -12,7 +12,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | DATA-01 | Postgres schema migrations | P0 | PASSED | 0 | 0 | 0 | Migrations 1 through 5 are applied. A proxy restart left the count at 5. |
 | DATA-02 | Organization scope and the default org | P0 | PASSED | 0 | 0 | 0 | Quickstart created two orgs and a cross-org probe was not visible. |
-| DATA-03 | Demo seed | P0 | NOT STARTED | | | | |
+| DATA-03 | Demo seed | P0 | PASSED | 0 | 0 | 0 | Seeded tools are orders (postgres) and catalog (mcp_http). |
 | VAULT-01 | AES-GCM tool vault | P0 | NOT STARTED | | | | |
 | VAULT-02 | Tool secrets stay write-only | P0 | NOT STARTED | | | | |
 | CORE-01 | Proxy pipeline | P0 | NOT STARTED | | | | |
@@ -143,25 +143,25 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DATA-03 Demo seed
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/seed/seed.go, cmd/keywarden/main.go, examples/policy.json, deploy/compose/initdb/01-orders.sql
 - **Expected behavior:** `keywarden seed`, or KEYWARDEN_SEED=1 on serve, loads the fictional support agent, the orders Postgres tool, and examples/policy.json. The orders database is the fictional schema in the compose init script. Seeding again does not duplicate the demo rows.
 - **Acceptance:**
-- [ ] After seed, the support agent and orders tool exist.
-- [ ] The active policy matches examples/policy.json.
-- [ ] A second seed does not create a second support agent.
+- [x] After seed, the support agent and orders tool exist.
+- [x] The active policy matches examples/policy.json.
+- [x] A second seed does not create a second support agent.
 - **Test cases:**
 - Run seed against an empty database.
 - Run seed twice.
 - Run seed when the orders DSN is unset or refused.
 - **Dependencies:** DATA-01, KEYWARDEN_ORDERS_DSN for the demo tool.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Seeded tools are orders (postgres) and catalog (mcp_http).
 
 ### VAULT-01 AES-GCM tool vault
 
