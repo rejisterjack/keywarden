@@ -66,7 +66,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | DASH-06 | Custom not-found page | P1 | BLOCKED | 0 | 0 | 0 | A missing URL returned the Page not found shell and the title Keywarden. Widths, contrast, and keyboard were not checked because Chrome DevTools MCP is not connected. |
 | E2E-01 | Playwright console journey | P1 | BLOCKED | 0 | 0 | 0 | The Playwright spec was not launched. The required browser is Chrome DevTools, and that MCP is not connected. |
 | E2E-02 | CI compose journey | P1 | BLOCKED | 0 | 0 | 0 | Quickstart passed. The unreachable-dashboard container and the Playwright step were not run. |
-| DEVOPS-01 | GitHub Actions CI | P1 | NOT STARTED | | | | |
+| DEVOPS-01 | GitHub Actions CI | P1 | PASSED | 0 | 0 | 0 | go test, go vet, staticcheck v0.8.2, and govulncheck v1.9.0 passed. One required-module advisory is not called. |
 | DEVOPS-02 | Proxy Docker image | P1 | NOT STARTED | | | | |
 | DEVOPS-03 | Docker Compose demo | P0 | NOT STARTED | | | | |
 | DEVOPS-04 | Release workflow | P2 | NOT STARTED | | | | |
@@ -1373,22 +1373,22 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DEVOPS-01 GitHub Actions CI
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** .github/workflows/ci.yml
 - **Expected behavior:** On push and pull request, CI runs go test with Postgres 16, staticcheck, and govulncheck on Go 1.27.4, then builds the dashboard and the proxy image. The journey job depends on the image.
 - **Acceptance:**
-- [ ] The workflow file names those jobs and the Go and Node versions above.
-- [ ] A local go test and dashboard build match the commands.
+- [x] The workflow file names those jobs and the Go and Node versions above.
+- [x] A local go test and dashboard build match the commands.
 - **Test cases:**
 - Read the workflow. Run the test and dashboard build commands locally. Do not change the workflow unless a test shows it is wrong.
 - **Dependencies:** TEST-01, DASH-05, DEVOPS-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** go test, go vet, staticcheck v0.8.2, and govulncheck v1.9.0 passed. One required-module advisory is not called.
 
 ### DEVOPS-02 Proxy Docker image
 
