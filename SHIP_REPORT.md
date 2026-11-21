@@ -14,7 +14,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | DATA-02 | Organization scope and the default org | P0 | PASSED | 0 | 0 | 0 | Quickstart created two orgs and a cross-org probe was not visible. |
 | DATA-03 | Demo seed | P0 | PASSED | 0 | 0 | 0 | Seeded tools are orders (postgres) and catalog (mcp_http). |
 | VAULT-01 | AES-GCM tool vault | P0 | PASSED | 0 | 0 | 0 | Vault tests passed. Stored ciphertext is not the plaintext password. |
-| VAULT-02 | Tool secrets stay write-only | P0 | NOT STARTED | | | | |
+| VAULT-02 | Tool secrets stay write-only | P0 | PASSED | 0 | 0 | 0 | GET /v1/tools has no secret. A foreign DSN was rejected before it was stored. |
 | CORE-01 | Proxy pipeline | P0 | NOT STARTED | | | | |
 | CORE-02 | JSON rules policy | P0 | NOT STARTED | | | | |
 | CORE-03 | Rego policy engine | P1 | NOT STARTED | | | | |
@@ -187,14 +187,14 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### VAULT-02 Tool secrets stay write-only
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/httpapi/server.go, internal/store/store.go
 - **Expected behavior:** Creating a tool accepts the secret once. List and get responses return tool metadata and never the plaintext secret or the ciphertext.
 - **Acceptance:**
-- [ ] POST /v1/tools with a secret returns the tool id and not the secret.
-- [ ] GET /v1/tools does not contain that secret.
-- [ ] The database row stores ciphertext and a nonce, not the plaintext.
+- [x] POST /v1/tools with a secret returns the tool id and not the secret.
+- [x] GET /v1/tools does not contain that secret.
+- [x] The database row stores ciphertext and a nonce, not the plaintext.
 - **Test cases:**
 - Send the documented happy-path request and record the status and body.
 - Repeat with an empty body, whitespace, a very long field, the wrong JSON types, an emoji, and a non-English string.
@@ -204,11 +204,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Point an upstream or the database at a closed port and confirm the failure is a tool or API error, not a crash.
 - **Dependencies:** VAULT-01, AUTH-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** GET /v1/tools has no secret. A foreign DSN was rejected before it was stored.
 
 ### CORE-01 Proxy pipeline
 
