@@ -55,7 +55,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | DEMO-01 | Demo secret allow-list | P1 | PASSED | 0 | 0 | 0 | A postgres secret without kw_demo=fake returned 400. |
 | DEMO-02 | Demo lock on mutations | P1 | PASSED | 0 | 0 | 0 | With KEYWARDEN_DEMO_LOCK=1, meta showed demo_lock true and creating an agent returned 403. Compose leaves the lock off. |
 | DEMO-03 | Fixture MCP handler | P2 | PASSED | 0 | 0 | 0 | POST /demo/mcp initialize returned serverInfo keywarden-fixture. |
-| SEC-01 | Secret redaction | P1 | NOT STARTED | | | | |
+| SEC-01 | Secret redaction | P1 | PASSED | 0 | 0 | 0 | Redaction tests passed. Tool list and logs checks did not show the orders password. |
 | SEC-02 | MCP body size limit | P1 | NOT STARTED | | | | |
 | SEC-03 | Timeouts and shutdown | P1 | NOT STARTED | | | | |
 | DASH-01 | Dashboard password session | P0 | NOT STARTED | | | | |
@@ -1120,22 +1120,22 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### SEC-01 Secret redaction
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** internal/redact/redact.go, internal/redact/redact_test.go
 - **Expected behavior:** Argument values that look like secrets are redacted before they are written to the audit log or returned in an error. The vault ciphertext is a separate store and is not the redaction step.
 - **Acceptance:**
-- [ ] A password-shaped argument is not stored in plaintext in the audit event.
-- [ ] An ordinary SQL string is still readable in the audit event.
+- [x] A password-shaped argument is not stored in plaintext in the audit event.
+- [x] An ordinary SQL string is still readable in the audit event.
 - **Test cases:**
 - Send arguments named password, token, and a normal sql field.
 - **Dependencies:** AUDIT-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Redaction tests passed. Tool list and logs checks did not show the orders password.
 
 ### SEC-02 MCP body size limit
 
