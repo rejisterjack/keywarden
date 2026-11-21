@@ -53,7 +53,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | CLI-02 | task, org, policy, audit, and version | P0 | PASSED | 0 | 0 | 0 | CLI command tests passed. |
 | CLI-03 | quickstart script | P0 | PASSED | 0 | 0 | 0 | scripts/quickstart.sh exited 0 against the compose demo. |
 | DEMO-01 | Demo secret allow-list | P1 | PASSED | 0 | 0 | 0 | A postgres secret without kw_demo=fake returned 400. |
-| DEMO-02 | Demo lock on mutations | P1 | NOT STARTED | | | | |
+| DEMO-02 | Demo lock on mutations | P1 | PASSED | 0 | 0 | 0 | With KEYWARDEN_DEMO_LOCK=1, meta showed demo_lock true and creating an agent returned 403. Compose leaves the lock off. |
 | DEMO-03 | Fixture MCP handler | P2 | NOT STARTED | | | | |
 | SEC-01 | Secret redaction | P1 | NOT STARTED | | | | |
 | SEC-02 | MCP body size limit | P1 | NOT STARTED | | | | |
@@ -1076,14 +1076,14 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DEMO-02 Demo lock on mutations
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** internal/httpapi/server.go, dashboard/lib/actions.ts, dashboard/app/(console)/agents/page.tsx
 - **Expected behavior:** The locked demo refuses agent, tool, and policy creates, updates, and deletes from the API and the dashboard. Approvals, task issue, and audit reads still work. The dashboard reads the lock from /v1/meta.
 - **Acceptance:**
-- [ ] Creating an agent in the locked demo is rejected.
-- [ ] Issuing a task still works.
-- [ ] The console shows the lock instead of a successful mutation.
+- [x] Creating an agent in the locked demo is rejected.
+- [x] Issuing a task still works.
+- [x] The console shows the lock instead of a successful mutation.
 - **Test cases:**
 - Click create in the locked console.
 - Call POST /v1/agents with the admin token while locked.
@@ -1093,11 +1093,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Keyboard focus stays on the page.
 - **Dependencies:** API-02, DASH-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** With KEYWARDEN_DEMO_LOCK=1, meta showed demo_lock true and creating an agent returned 403. Compose leaves the lock off.
 
 ### DEMO-03 Fixture MCP handler
 
