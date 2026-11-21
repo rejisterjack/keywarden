@@ -48,7 +48,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | API-06 | Tasks admin API | P0 | PASSED | 0 | 0 | 0 | The task list omitted the plaintext token. |
 | API-07 | Approvals admin API | P0 | PASSED | 0 | 0 | 0 | The quickstart approval decision succeeded. |
 | API-08 | Audit list | P1 | PASSED | 0 | 0 | 0 | GET /v1/audit returned the event list. |
-| RATE-01 | MCP rate limit | P1 | NOT STARTED | | | | |
+| RATE-01 | MCP rate limit | P1 | PASSED | 0 | 0 | 0 | 80 parallel tools/list calls: 59 returned 200 and 21 returned 429. |
 | CLI-01 | serve and seed | P0 | NOT STARTED | | | | |
 | CLI-02 | task, org, policy, audit, and version | P0 | NOT STARTED | | | | |
 | CLI-03 | quickstart script | P0 | NOT STARTED | | | | |
@@ -967,24 +967,24 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### RATE-01 MCP rate limit
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** internal/limit/limit.go, internal/config/config.go
 - **Expected behavior:** POST /mcp is limited by a token bucket configured with KEYWARDEN_MCP_RPS and KEYWARDEN_MCP_BURST. Health and admin routes are not part of that bucket. A limited call is rejected without running the tool.
 - **Acceptance:**
-- [ ] A burst above the configured limit is rejected.
-- [ ] healthz still succeeds while /mcp is limited.
-- [ ] Two different task tokens do not silently share one bucket if the limiter is keyed per token; if it is process-wide, the test records that.
+- [x] A burst above the configured limit is rejected.
+- [x] healthz still succeeds while /mcp is limited.
+- [x] Two different task tokens do not silently share one bucket if the limiter is keyed per token; if it is process-wide, the test records that.
 - **Test cases:**
 - Send more MCP calls than the burst.
 - Confirm the next call after a refill is accepted.
 - **Dependencies:** MCP-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** 80 parallel tools/list calls: 59 returned 200 and 21 returned 429.
 
 ### CLI-01 serve and seed
 
