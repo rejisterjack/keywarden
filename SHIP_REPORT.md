@@ -11,7 +11,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | ID | Feature | Priority | Status | Bugs Found | Bugs Fixed | UI Issues Fixed | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | DATA-01 | Postgres schema migrations | P0 | PASSED | 0 | 0 | 0 | Migrations 1 through 5 are applied. A proxy restart left the count at 5. |
-| DATA-02 | Organization scope and the default org | P0 | NOT STARTED | | | | |
+| DATA-02 | Organization scope and the default org | P0 | PASSED | 0 | 0 | 0 | Quickstart created two orgs and a cross-org probe was not visible. |
 | DATA-03 | Demo seed | P0 | NOT STARTED | | | | |
 | VAULT-01 | AES-GCM tool vault | P0 | NOT STARTED | | | | |
 | VAULT-02 | Tool secrets stay write-only | P0 | NOT STARTED | | | | |
@@ -118,14 +118,14 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DATA-02 Organization scope and the default org
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/store/orgs.go, internal/store/orgctx.go, internal/store/migrations/004_orgs.sql, internal/config/config.go
 - **Expected behavior:** Agents, tools, policies, tasks, approvals, and audit events carry an organization id. With KEYWARDEN_SINGLE_TENANT=1 the process admin token acts as the migration-seeded default org. With it set to 0, that process token is not an org admin token.
 - **Acceptance:**
-- [ ] Single-tenant serve accepts KEYWARDEN_ADMIN_TOKEN for the default org.
-- [ ] A task token issued there calls tools in that org only.
-- [ ] Turning single-tenant off rejects the process token on org-scoped admin routes.
+- [x] Single-tenant serve accepts KEYWARDEN_ADMIN_TOKEN for the default org.
+- [x] A task token issued there calls tools in that org only.
+- [x] Turning single-tenant off rejects the process token on org-scoped admin routes.
 - **Test cases:**
 - Send the documented happy-path request and record the status and body.
 - Repeat with an empty body, whitespace, a very long field, the wrong JSON types, an emoji, and a non-English string.
@@ -135,11 +135,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Point an upstream or the database at a closed port and confirm the failure is a tool or API error, not a crash.
 - **Dependencies:** DATA-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Quickstart created two orgs and a cross-org probe was not visible.
 
 ### DATA-03 Demo seed
 
