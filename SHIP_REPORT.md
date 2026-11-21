@@ -34,7 +34,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | AUTH-01 | Process admin token and org admin token | P0 | PASSED | 0 | 0 | 0 | Missing, short, and task tokens on /v1/agents returned 401. |
 | AUTH-02 | Create organizations and org tokens | P1 | PASSED | 0 | 0 | 0 | Quickstart created orgs with the process admin token. |
 | AUTH-03 | Cross-organization isolation | P0 | PASSED | 0 | 0 | 0 | An agent in one org was not visible from the other. |
-| AUTH-04 | Task lifetime and revoke | P0 | NOT STARTED | | | | |
+| AUTH-04 | Task lifetime and revoke | P0 | PASSED | 0 | 0 | 0 | TTL above 24 hours was 400. Revoke then tools/list was 401. |
 | APPROVE-01 | Approval wait and decision | P0 | NOT STARTED | | | | |
 | APPROVE-02 | Approval bound to the argument hash | P0 | NOT STARTED | | | | |
 | APPROVE-03 | Timeout and restart do not forward | P0 | NOT STARTED | | | | |
@@ -654,25 +654,25 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### AUTH-04 Task lifetime and revoke
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/httpapi/server.go, cmd/keywarden/cli.go, docs/architecture.md
 - **Expected behavior:** POST /v1/tasks and `keywarden task create` return a kwt_ token once. The default lifetime is 15 minutes and the maximum is 24 hours. The task can restrict tool ids. Revoke makes the token unusable. List responses omit the plaintext token.
 - **Acceptance:**
-- [ ] A created task works until its expiry.
-- [ ] A revoked task is rejected on the next call.
-- [ ] GET /v1/tasks does not contain the kwt_ secret.
+- [x] A created task works until its expiry.
+- [x] A revoked task is rejected on the next call.
+- [x] GET /v1/tasks does not contain the kwt_ secret.
 - **Test cases:**
 - Create a task with the default TTL, a 1-second TTL, and a TTL over 24 hours.
 - Revoke it twice.
 - Create a task for an unknown agent.
 - **Dependencies:** AUTH-01, MCP-03.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** TTL above 24 hours was 400. Revoke then tools/list was 401.
 
 ### APPROVE-01 Approval wait and decision
 
