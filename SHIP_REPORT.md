@@ -25,7 +25,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | MCP-03 | Task token authentication | P0 | PASSED | 0 | 0 | 0 | A revoked task token then received 401. |
 | MCP-04 | toolId__toolName calls | P0 | PASSED | 0 | 0 | 0 | A name without toolId__name returned -32000. catalog__lookup_order succeeded. |
 | TOOL-01 | Postgres tool | P0 | PASSED | 0 | 0 | 0 | orders__query returned a row in quickstart. |
-| TOOL-02 | mcp_http upstream | P1 | NOT STARTED | | | | |
+| TOOL-02 | mcp_http upstream | P1 | PASSED | 0 | 0 | 0 | catalog__lookup_order returned the fictional Ada Lovelace order. |
 | TOOL-03 | mcp_stdio | P1 | NOT STARTED | | | | |
 | TOOL-04 | http tool | P1 | NOT STARTED | | | | |
 | TOOL-05 | aws_http SigV4 | P1 | NOT STARTED | | | | |
@@ -440,14 +440,14 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### TOOL-02 mcp_http upstream
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** internal/upstream/httpproxy.go, internal/mcp/client.go
 - **Expected behavior:** An mcp_http tool keeps an upstream MCP session and injects the sealed headers. The upstream secret is not returned to the agent. A refused upstream becomes a tool error after the audit event.
 - **Acceptance:**
-- [ ] A listed upstream tool can be called when policy allows it.
-- [ ] The sealed header is not present in the audit payload.
-- [ ] An upstream that refuses the connection does not crash the proxy.
+- [x] A listed upstream tool can be called when policy allows it.
+- [x] The sealed header is not present in the audit payload.
+- [x] An upstream that refuses the connection does not crash the proxy.
 - **Test cases:**
 - Send the documented happy-path request and record the status and body.
 - Repeat with an empty body, whitespace, a very long field, the wrong JSON types, an emoji, and a non-English string.
@@ -457,11 +457,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Point an upstream or the database at a closed port and confirm the failure is a tool or API error, not a crash.
 - **Dependencies:** VAULT-02, CORE-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** catalog__lookup_order returned the fictional Ada Lovelace order.
 
 ### TOOL-03 mcp_stdio
 
