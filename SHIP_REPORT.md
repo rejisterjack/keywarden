@@ -27,7 +27,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | TOOL-01 | Postgres tool | P0 | PASSED | 0 | 0 | 0 | orders__query returned a row in quickstart. |
 | TOOL-02 | mcp_http upstream | P1 | PASSED | 0 | 0 | 0 | catalog__lookup_order returned the fictional Ada Lovelace order. |
 | TOOL-03 | mcp_stdio | P1 | PASSED | 0 | 0 | 0 | Demo mode returned 400 stdio tools are disabled. The stdio env test passed. |
-| TOOL-04 | http tool | P1 | NOT STARTED | | | | |
+| TOOL-04 | http tool | P1 | PASSED | 0 | 0 | 0 | Demo mode returned 400 http tools are disabled. HTTP proxy tests passed. |
 | TOOL-05 | aws_http SigV4 | P1 | NOT STARTED | | | | |
 | TOOL-06 | gcp_http bearer helper | P2 | NOT STARTED | | | | |
 | TOOL-07 | azure_http bearer helper | P2 | NOT STARTED | | | | |
@@ -487,14 +487,14 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### TOOL-04 http tool
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** internal/upstream/httpproxy.go, internal/store/migrations/002_http_kind.sql
 - **Expected behavior:** The http kind exposes one MCP tool named request. It forwards to a sealed base URL using an allow-listed method and path prefix. Demo mode refuses this kind.
 - **Acceptance:**
-- [ ] An allowed method and prefix is forwarded.
-- [ ] A method or path outside the allow list is denied before the request.
-- [ ] Demo mode rejects creation of an http tool.
+- [x] An allowed method and prefix is forwarded.
+- [x] A method or path outside the allow list is denied before the request.
+- [x] Demo mode rejects creation of an http tool.
 - **Test cases:**
 - Send the documented happy-path request and record the status and body.
 - Repeat with an empty body, whitespace, a very long field, the wrong JSON types, an emoji, and a non-English string.
@@ -504,11 +504,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Point an upstream or the database at a closed port and confirm the failure is a tool or API error, not a crash.
 - **Dependencies:** VAULT-02, DEMO-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Demo mode returned 400 http tools are disabled. HTTP proxy tests passed.
 
 ### TOOL-05 aws_http SigV4
 
