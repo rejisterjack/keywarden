@@ -26,7 +26,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | MCP-04 | toolId__toolName calls | P0 | PASSED | 0 | 0 | 0 | A name without toolId__name returned -32000. catalog__lookup_order succeeded. |
 | TOOL-01 | Postgres tool | P0 | PASSED | 0 | 0 | 0 | orders__query returned a row in quickstart. |
 | TOOL-02 | mcp_http upstream | P1 | PASSED | 0 | 0 | 0 | catalog__lookup_order returned the fictional Ada Lovelace order. |
-| TOOL-03 | mcp_stdio | P1 | NOT STARTED | | | | |
+| TOOL-03 | mcp_stdio | P1 | PASSED | 0 | 0 | 0 | Demo mode returned 400 stdio tools are disabled. The stdio env test passed. |
 | TOOL-04 | http tool | P1 | NOT STARTED | | | | |
 | TOOL-05 | aws_http SigV4 | P1 | NOT STARTED | | | | |
 | TOOL-06 | gcp_http bearer helper | P2 | NOT STARTED | | | | |
@@ -465,25 +465,25 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### TOOL-03 mcp_stdio
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** internal/mcp/stdio.go, internal/config/config.go, docs/limitations.md
 - **Expected behavior:** An mcp_stdio tool runs on the proxy host as the proxy user. It stays off unless KEYWARDEN_ALLOW_STDIO=1. Demo mode refuses it even when that flag is set.
 - **Acceptance:**
-- [ ] Demo mode rejects an mcp_stdio tool.
-- [ ] With the flag off, outside demo mode, registration or the call is refused.
-- [ ] With the flag on and demo mode off, the command is spawned only after policy allows it.
+- [x] Demo mode rejects an mcp_stdio tool.
+- [x] With the flag off, outside demo mode, registration or the call is refused.
+- [x] With the flag on and demo mode off, the command is spawned only after policy allows it.
 - **Test cases:**
 - Register a stdio tool in demo mode.
 - Register one with the flag off.
 - Point the command at a missing binary.
 - **Dependencies:** DEMO-01, VAULT-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Demo mode returned 400 stdio tools are disabled. The stdio env test passed.
 
 ### TOOL-04 http tool
 
