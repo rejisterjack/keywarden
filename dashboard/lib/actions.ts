@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { kw, KwError, loadMeta } from "@/lib/api";
+import { secureCookies } from "@/lib/cookies";
 import { clearSession, passwordMatches, requireSession, startSession } from "@/lib/session";
 
 const issuedCookie = "kw_issued_token";
@@ -62,7 +63,7 @@ export async function createTask(formData: FormData) {
     jar.set(issuedCookie, token, {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: secureCookies(),
       path: "/",
       maxAge: 120,
     });

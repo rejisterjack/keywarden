@@ -1,6 +1,7 @@
 import { createHash, createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { secureCookies } from "@/lib/cookies";
 
 const cookieName = "kw_session";
 const maxAge = 60 * 60 * 12;
@@ -54,7 +55,7 @@ export async function startSession() {
   jar.set(cookieName, sign(Math.floor(Date.now() / 1000) + maxAge), {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: secureCookies(),
     path: "/",
     maxAge,
   });
