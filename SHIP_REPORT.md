@@ -54,7 +54,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | CLI-03 | quickstart script | P0 | PASSED | 0 | 0 | 0 | scripts/quickstart.sh exited 0 against the compose demo. |
 | DEMO-01 | Demo secret allow-list | P1 | PASSED | 0 | 0 | 0 | A postgres secret without kw_demo=fake returned 400. |
 | DEMO-02 | Demo lock on mutations | P1 | PASSED | 0 | 0 | 0 | With KEYWARDEN_DEMO_LOCK=1, meta showed demo_lock true and creating an agent returned 403. Compose leaves the lock off. |
-| DEMO-03 | Fixture MCP handler | P2 | NOT STARTED | | | | |
+| DEMO-03 | Fixture MCP handler | P2 | PASSED | 0 | 0 | 0 | POST /demo/mcp initialize returned serverInfo keywarden-fixture. |
 | SEC-01 | Secret redaction | P1 | NOT STARTED | | | | |
 | SEC-02 | MCP body size limit | P1 | NOT STARTED | | | | |
 | SEC-03 | Timeouts and shutdown | P1 | NOT STARTED | | | | |
@@ -1101,22 +1101,22 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DEMO-03 Fixture MCP handler
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P2
 - **Files:** internal/fixture/fixture.go, internal/httpapi/server.go
 - **Expected behavior:** When the fixture is enabled, GET or the registered /demo/mcp handler serves the fictional upstream used by tests and the demo. It is not the data plane.
 - **Acceptance:**
-- [ ] The fixture responds on /demo/mcp when enabled.
-- [ ] It is absent when the fixture is not configured.
+- [x] The fixture responds on /demo/mcp when enabled.
+- [x] It is absent when the fixture is not configured.
 - **Test cases:**
 - Request /demo/mcp with the fixture on and off.
 - **Dependencies:** CLI-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** POST /demo/mcp initialize returned serverInfo keywarden-fixture.
 
 ### SEC-01 Secret redaction
 
