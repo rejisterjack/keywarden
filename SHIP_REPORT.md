@@ -71,7 +71,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | DEVOPS-03 | Docker Compose demo | P0 | PASSED | 0 | 0 | 0 | Compose is up. healthz, readyz, and the dashboard returned 200. |
 | DEVOPS-04 | Release workflow | P2 | PASSED | 0 | 0 | 0 | The release workflow was read. No tag was pushed. |
 | DEVOPS-05 | Railway config | P2 | PASSED | 0 | 0 | 0 | railway.toml was read. Nothing was deployed. |
-| TEST-01 | Go test suite | P0 | NOT STARTED | | | | |
+| TEST-01 | Go test suite | P0 | PASSED | 0 | 0 | 0 | go test ./... exited 0 with KEYWARDEN_TEST_DATABASE_URL set. |
 | GAP-01 | Root dashboard error page | P1 | NOT STARTED | | | | |
 
 ## Gaps
@@ -1471,22 +1471,22 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### TEST-01 Go test suite
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** docs/testing.md, internal/**/*_test.go, cmd/keywarden/cli_test.go
 - **Expected behavior:** go test ./... needs KEYWARDEN_TEST_DATABASE_URL. The tests cover policy, vault, redaction, the HTTP boundary, org isolation, and the CLI parser. Unit tests that do not need Postgres still run in the same command.
 - **Acceptance:**
-- [ ] go test ./... exits 0 with the test database set.
-- [ ] The command fails clearly when that variable is missing and a test needs a database.
+- [x] go test ./... exits 0 with the test database set.
+- [x] The command fails clearly when that variable is missing and a test needs a database.
 - **Test cases:**
 - Run the full package test once. Do not weaken a failing test.
 - **Dependencies:** DATA-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** go test ./... exited 0 with KEYWARDEN_TEST_DATABASE_URL set.
 
 ### GAP-01 Root dashboard error page
 
