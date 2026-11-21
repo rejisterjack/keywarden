@@ -69,7 +69,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | DEVOPS-01 | GitHub Actions CI | P1 | PASSED | 0 | 0 | 0 | go test, go vet, staticcheck v0.8.2, and govulncheck v1.9.0 passed. One required-module advisory is not called. |
 | DEVOPS-02 | Proxy Docker image | P1 | PASSED | 0 | 0 | 0 | The proxy image env is only PATH and SSL_CERT_FILE. |
 | DEVOPS-03 | Docker Compose demo | P0 | PASSED | 0 | 0 | 0 | Compose is up. healthz, readyz, and the dashboard returned 200. |
-| DEVOPS-04 | Release workflow | P2 | NOT STARTED | | | | |
+| DEVOPS-04 | Release workflow | P2 | PASSED | 0 | 0 | 0 | The release workflow was read. No tag was pushed. |
 | DEVOPS-05 | Railway config | P2 | NOT STARTED | | | | |
 | TEST-01 | Go test suite | P0 | NOT STARTED | | | | |
 | GAP-01 | Root dashboard error page | P1 | NOT STARTED | | | | |
@@ -1431,23 +1431,23 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DEVOPS-04 Release workflow
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P2
 - **Files:** .github/workflows/release.yml, internal/version/version.go
 - **Expected behavior:** A v* tag runs tests and publishes a GitHub release. The workflow has contents and packages permissions. This pass reads it and does not push a tag.
 - **Acceptance:**
-- [ ] The workflow triggers on tags matching v*.
-- [ ] The version stamp path is visible in the workflow.
-- [ ] No tag is created during the report.
+- [x] The workflow triggers on tags matching v*.
+- [x] The version stamp path is visible in the workflow.
+- [x] No tag is created during the report.
 - **Test cases:**
 - Read the workflow only.
 - **Dependencies:** DEVOPS-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** The release workflow was read. No tag was pushed.
 
 ### DEVOPS-05 Railway config
 
