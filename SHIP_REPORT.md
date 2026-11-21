@@ -21,7 +21,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | CORE-04 | SQL classifier | P0 | PASSED | 0 | 0 | 0 | Quickstart denied DROP. SQL boundary tests did not dial. |
 | CORE-05 | tools/list visibility | P0 | PASSED | 0 | 0 | 0 | tools/list returned the seeded tools and hid nothing it should show. |
 | MCP-01 | POST /mcp JSON-RPC | P0 | PASSED | 0 | 0 | 0 | initialize returned protocol 2025-03-26. A blank body returned -32700. |
-| MCP-02 | GET and DELETE /mcp | P1 | NOT STARTED | | | | |
+| MCP-02 | GET and DELETE /mcp | P1 | PASSED | 0 | 0 | 0 | GET /mcp with a task token is 405. DELETE /mcp is 204. |
 | MCP-03 | Task token authentication | P0 | NOT STARTED | | | | |
 | MCP-04 | toolId__toolName calls | P0 | NOT STARTED | | | | |
 | TOOL-01 | Postgres tool | P0 | NOT STARTED | | | | |
@@ -350,24 +350,24 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### MCP-02 GET and DELETE /mcp
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** internal/httpapi/server.go, docs/limitations.md
 - **Expected behavior:** GET /mcp is not an SSE stream and is rejected. DELETE /mcp is accepted as a no-op session end. Clients that need server-sent events are outside this product.
 - **Acceptance:**
-- [ ] GET /mcp does not return an event stream.
-- [ ] DELETE /mcp succeeds without deleting the task or the audit chain.
+- [x] GET /mcp does not return an event stream.
+- [x] DELETE /mcp succeeds without deleting the task or the audit chain.
 - **Test cases:**
 - GET /mcp with a valid task token.
 - DELETE /mcp twice.
 - POST a method other than the implemented JSON-RPC methods.
 - **Dependencies:** MCP-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** GET /mcp with a task token is 405. DELETE /mcp is 204.
 
 ### MCP-03 Task token authentication
 
