@@ -67,7 +67,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | E2E-01 | Playwright console journey | P1 | BLOCKED | 0 | 0 | 0 | The Playwright spec was not launched. The required browser is Chrome DevTools, and that MCP is not connected. |
 | E2E-02 | CI compose journey | P1 | BLOCKED | 0 | 0 | 0 | Quickstart passed. The unreachable-dashboard container and the Playwright step were not run. |
 | DEVOPS-01 | GitHub Actions CI | P1 | PASSED | 0 | 0 | 0 | go test, go vet, staticcheck v0.8.2, and govulncheck v1.9.0 passed. One required-module advisory is not called. |
-| DEVOPS-02 | Proxy Docker image | P1 | NOT STARTED | | | | |
+| DEVOPS-02 | Proxy Docker image | P1 | PASSED | 0 | 0 | 0 | The proxy image env is only PATH and SSL_CERT_FILE. |
 | DEVOPS-03 | Docker Compose demo | P0 | NOT STARTED | | | | |
 | DEVOPS-04 | Release workflow | P2 | NOT STARTED | | | | |
 | DEVOPS-05 | Railway config | P2 | NOT STARTED | | | | |
@@ -1392,22 +1392,22 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DEVOPS-02 Proxy Docker image
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** deploy/Dockerfile, .dockerignore
 - **Expected behavior:** The proxy image builds the Go server and starts `keywarden serve`. CI tags it keywarden:ci. It does not bake a production vault key into the image.
 - **Acceptance:**
-- [ ] docker build -f deploy/Dockerfile completes.
-- [ ] The image has no KEYWARDEN_VAULT_KEY literal from the demo env file.
+- [x] docker build -f deploy/Dockerfile completes.
+- [x] The image has no KEYWARDEN_VAULT_KEY literal from the demo env file.
 - **Test cases:**
 - Build the image. Inspect its config for baked secrets.
 - **Dependencies:** CLI-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** The proxy image env is only PATH and SSL_CERT_FILE.
 
 ### DEVOPS-03 Docker Compose demo
 
