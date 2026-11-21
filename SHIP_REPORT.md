@@ -70,7 +70,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | DEVOPS-02 | Proxy Docker image | P1 | PASSED | 0 | 0 | 0 | The proxy image env is only PATH and SSL_CERT_FILE. |
 | DEVOPS-03 | Docker Compose demo | P0 | PASSED | 0 | 0 | 0 | Compose is up. healthz, readyz, and the dashboard returned 200. |
 | DEVOPS-04 | Release workflow | P2 | PASSED | 0 | 0 | 0 | The release workflow was read. No tag was pushed. |
-| DEVOPS-05 | Railway config | P2 | NOT STARTED | | | | |
+| DEVOPS-05 | Railway config | P2 | PASSED | 0 | 0 | 0 | railway.toml was read. Nothing was deployed. |
 | TEST-01 | Go test suite | P0 | NOT STARTED | | | | |
 | GAP-01 | Root dashboard error page | P1 | NOT STARTED | | | | |
 
@@ -1451,23 +1451,23 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DEVOPS-05 Railway config
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P2
 - **Files:** railway.toml, deploy/Dockerfile, docs/deploy.md
 - **Expected behavior:** railway.toml builds deploy/Dockerfile, starts `/keywarden serve`, and checks /healthz with a 30 second timeout. Deploying it needs the operator's Railway project and secrets. This pass does not deploy.
 - **Acceptance:**
-- [ ] The health check path is /healthz.
-- [ ] The start command is the serve binary.
-- [ ] A missing Railway token is recorded as blocked only if a later step tries to deploy.
+- [x] The health check path is /healthz.
+- [x] The start command is the serve binary.
+- [x] A missing Railway token is recorded as blocked only if a later step tries to deploy.
 - **Test cases:**
 - Read the file. Do not deploy.
 - **Dependencies:** DEVOPS-02, API-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** railway.toml was read. Nothing was deployed.
 
 ### TEST-01 Go test suite
 
