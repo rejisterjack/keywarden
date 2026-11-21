@@ -38,7 +38,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | APPROVE-01 | Approval wait and decision | P0 | PASSED | 0 | 0 | 0 | DELETE waited, approve returned DELETE 1. |
 | APPROVE-02 | Approval bound to the argument hash | P0 | PASSED | 0 | 0 | 0 | TestApprovalIsBoundToArgumentHash passed. |
 | APPROVE-03 | Timeout and restart do not forward | P0 | PASSED | 0 | 0 | 0 | TestTimeoutAndRestartDoNotForward passed. |
-| AUDIT-01 | Per-organization hash chain | P0 | NOT STARTED | | | | |
+| AUDIT-01 | Per-organization hash chain | P0 | PASSED | 0 | 0 | 0 | Audit verify reported a single intact chain. |
 | AUDIT-02 | Audit verify | P0 | NOT STARTED | | | | |
 | API-01 | Liveness and readiness | P0 | NOT STARTED | | | | |
 | API-02 | GET /v1/meta | P0 | NOT STARTED | | | | |
@@ -737,24 +737,24 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### AUDIT-01 Per-organization hash chain
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/store/audit.go, internal/store/migrations/004_orgs.sql
 - **Expected behavior:** Each organization has its own hash chain. A transaction advisory lock is keyed per org. The genesis previous hash is 32 zero bytes. Secret-shaped values are redacted before the event is stored.
 - **Acceptance:**
-- [ ] The first event chains to 32 zero bytes.
-- [ ] The next event's previous hash is the prior event's hash.
-- [ ] Two orgs do not share one chain.
+- [x] The first event chains to 32 zero bytes.
+- [x] The next event's previous hash is the prior event's hash.
+- [x] Two orgs do not share one chain.
 - **Test cases:**
 - Record an allow and a deny.
 - Write events for two orgs in parallel.
 - **Dependencies:** SEC-01, DATA-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Audit verify reported a single intact chain.
 
 ### AUDIT-02 Audit verify
 
