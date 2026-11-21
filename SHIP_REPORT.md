@@ -17,7 +17,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | VAULT-02 | Tool secrets stay write-only | P0 | PASSED | 0 | 0 | 0 | GET /v1/tools has no secret. A foreign DSN was rejected before it was stored. |
 | CORE-01 | Proxy pipeline | P0 | PASSED | 0 | 0 | 0 | Quickstart: SELECT allowed, DROP denied, DELETE only after approval. |
 | CORE-02 | JSON rules policy | P0 | PASSED | 0 | 0 | 0 | DROP TABLE was denied by the orders-destroy rule. |
-| CORE-03 | Rego policy engine | P1 | NOT STARTED | | | | |
+| CORE-03 | Rego policy engine | P1 | PASSED | 0 | 0 | 0 | TestRegoPolicyEngine and the Rego package tests passed. |
 | CORE-04 | SQL classifier | P0 | NOT STARTED | | | | |
 | CORE-05 | tools/list visibility | P0 | NOT STARTED | | | | |
 | MCP-01 | POST /mcp JSON-RPC | P0 | NOT STARTED | | | | |
@@ -260,25 +260,25 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### CORE-03 Rego policy engine
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** internal/policy/rego.go, examples/policy.rego.json, internal/policy/rego_test.go
 - **Expected behavior:** A policy with engine rego is compiled when it is applied. The module must decide allow, deny, or require_approval from the same call input. An undefined or malformed decision denies the call. tools/list uses the module visible rule when one exists.
 - **Acceptance:**
-- [ ] A valid Rego allow decision forwards the call.
-- [ ] A module that returns no decision denies the call.
-- [ ] A Rego policy that fails to compile is rejected at apply time.
+- [x] A valid Rego allow decision forwards the call.
+- [x] A module that returns no decision denies the call.
+- [x] A Rego policy that fails to compile is rejected at apply time.
 - **Test cases:**
 - Apply examples/policy.rego.json.
 - Apply a module with a syntax error.
 - Call a tool the visible rule hides and confirm it is absent from tools/list.
 - **Dependencies:** API-05, CORE-05.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** TestRegoPolicyEngine and the Rego package tests passed.
 
 ### CORE-04 SQL classifier
 
