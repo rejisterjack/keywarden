@@ -60,7 +60,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | SEC-03 | Timeouts and shutdown | P1 | PASSED | 0 | 0 | 0 | The proxy became ready again after a container restart. |
 | DASH-01 | Dashboard password session | P0 | BLOCKED | 1 | 1 | 0 | Session cookie is Secure only when the API URL is https, so the local HTTP console can keep it. Login was not clicked: Chrome DevTools MCP is not connected. |
 | DASH-02 | Operator console | P0 | BLOCKED | 0 | 0 | 0 | Chrome DevTools MCP is not connected, so the console was not clicked through. |
-| DASH-03 | Marketing landing | P1 | NOT STARTED | | | | |
+| DASH-03 | Marketing landing | P1 | BLOCKED | 0 | 0 | 0 | Chrome DevTools MCP is not connected, so the landing page was not viewed. |
 | DASH-04 | Proxy unreachable | P1 | NOT STARTED | | | | |
 | DASH-05 | Dashboard production build | P0 | NOT STARTED | | | | |
 | DASH-06 | Custom not-found page | P1 | NOT STARTED | | | | |
@@ -1237,7 +1237,7 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DASH-03 Marketing landing
 
-- **Status:** NOT STARTED
+- **Status:** BLOCKED
 - **Priority:** P1
 - **Files:** dashboard/app/page.tsx, dashboard/components/landing/*.tsx
 - **Expected behavior:** The public home page explains the proxy, the policy example, the architecture, and the quickstart. It links to the operator login. The landing root is the dark Obsidian Sentinel section in globals.css. The public demo URL in the README is https://keywarden.rejisterjack.com.
@@ -1257,11 +1257,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Confirm the browser console has no error from the action.
 - **Dependencies:** None.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Chrome DevTools MCP is not connected, so the landing page was not viewed.
 
 ### DASH-04 Proxy unreachable
 
