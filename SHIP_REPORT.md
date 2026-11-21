@@ -41,7 +41,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | AUDIT-01 | Per-organization hash chain | P0 | PASSED | 0 | 0 | 0 | Audit verify reported a single intact chain. |
 | AUDIT-02 | Audit verify | P0 | PASSED | 0 | 0 | 0 | verify ok true, 49 events, after the live journey. |
 | API-01 | Liveness and readiness | P0 | PASSED | 0 | 0 | 0 | GET /healthz and /readyz returned ok. POST /healthz returned 405. |
-| API-02 | GET /v1/meta | P0 | NOT STARTED | | | | |
+| API-02 | GET /v1/meta | P0 | PASSED | 0 | 0 | 0 | Meta reported demo true, version 0.1.1, and the default org. No token required. |
 | API-03 | Agents | P0 | NOT STARTED | | | | |
 | API-04 | Tools | P0 | NOT STARTED | | | | |
 | API-05 | Policies | P0 | NOT STARTED | | | | |
@@ -801,13 +801,13 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### API-02 GET /v1/meta
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/httpapi/server.go, dashboard/lib/api.ts
 - **Expected behavior:** The meta route reports demo mode, the demo lock, and the version. The dashboard reads it to decide whether mutations are locked. It is an admin route.
 - **Acceptance:**
-- [ ] An admin token receives demo, demo_lock, and version.
-- [ ] A missing token is rejected.
+- [x] An admin token receives demo, demo_lock, and version.
+- [x] A missing token is rejected.
 - **Test cases:**
 - Send the documented happy-path request and record the status and body.
 - Repeat with an empty body, whitespace, a very long field, the wrong JSON types, an emoji, and a non-English string.
@@ -817,11 +817,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Point an upstream or the database at a closed port and confirm the failure is a tool or API error, not a crash.
 - **Dependencies:** AUTH-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Meta reported demo true, version 0.1.1, and the default org. No token required.
 
 ### API-03 Agents
 
