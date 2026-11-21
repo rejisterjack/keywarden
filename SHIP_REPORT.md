@@ -37,7 +37,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | AUTH-04 | Task lifetime and revoke | P0 | PASSED | 0 | 0 | 0 | TTL above 24 hours was 400. Revoke then tools/list was 401. |
 | APPROVE-01 | Approval wait and decision | P0 | PASSED | 0 | 0 | 0 | DELETE waited, approve returned DELETE 1. |
 | APPROVE-02 | Approval bound to the argument hash | P0 | PASSED | 0 | 0 | 0 | TestApprovalIsBoundToArgumentHash passed. |
-| APPROVE-03 | Timeout and restart do not forward | P0 | NOT STARTED | | | | |
+| APPROVE-03 | Timeout and restart do not forward | P0 | PASSED | 0 | 0 | 0 | TestTimeoutAndRestartDoNotForward passed. |
 | AUDIT-01 | Per-organization hash chain | P0 | NOT STARTED | | | | |
 | AUDIT-02 | Audit verify | P0 | NOT STARTED | | | | |
 | API-01 | Liveness and readiness | P0 | NOT STARTED | | | | |
@@ -717,23 +717,23 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### APPROVE-03 Timeout and restart do not forward
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/approval/wait.go, docs/limitations.md
 - **Expected behavior:** If the rule timeout passes, or the proxy restarts while a call is waiting or after approval but before the upstream finishes, the call is expired and is not forwarded. The agent has to call again.
 - **Acceptance:**
-- [ ] A timeout records an expired decision and does not open the upstream.
-- [ ] A restart does not replay a half-finished approval.
+- [x] A timeout records an expired decision and does not open the upstream.
+- [x] A restart does not replay a half-finished approval.
 - **Test cases:**
 - Use a one-second timeout and do not decide.
 - Approve and stop the process before the upstream returns, then start it again.
 - **Dependencies:** APPROVE-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** TestTimeoutAndRestartDoNotForward passed.
 
 ### AUDIT-01 Per-organization hash chain
 
