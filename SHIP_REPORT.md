@@ -20,7 +20,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | CORE-03 | Rego policy engine | P1 | PASSED | 0 | 0 | 0 | TestRegoPolicyEngine and the Rego package tests passed. |
 | CORE-04 | SQL classifier | P0 | PASSED | 0 | 0 | 0 | Quickstart denied DROP. SQL boundary tests did not dial. |
 | CORE-05 | tools/list visibility | P0 | PASSED | 0 | 0 | 0 | tools/list returned the seeded tools and hid nothing it should show. |
-| MCP-01 | POST /mcp JSON-RPC | P0 | NOT STARTED | | | | |
+| MCP-01 | POST /mcp JSON-RPC | P0 | PASSED | 0 | 0 | 0 | initialize returned protocol 2025-03-26. A blank body returned -32700. |
 | MCP-02 | GET and DELETE /mcp | P1 | NOT STARTED | | | | |
 | MCP-03 | Task token authentication | P0 | NOT STARTED | | | | |
 | MCP-04 | toolId__toolName calls | P0 | NOT STARTED | | | | |
@@ -325,14 +325,14 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### MCP-01 POST /mcp JSON-RPC
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/httpapi/server.go, internal/mcp/rpc.go
 - **Expected behavior:** POST /mcp speaks Streamable HTTP JSON-RPC for initialize, tools/list, and tools/call. The response is a JSON-RPC result or error. The server version string comes from internal/version/version.go, currently 0.1.1 unless the build stamps it.
 - **Acceptance:**
-- [ ] initialize returns the server name and version.
-- [ ] tools/list and tools/call return JSON-RPC results for a valid task token.
-- [ ] A malformed JSON body returns a JSON-RPC error and the process stays up.
+- [x] initialize returns the server name and version.
+- [x] tools/list and tools/call return JSON-RPC results for a valid task token.
+- [x] A malformed JSON body returns a JSON-RPC error and the process stays up.
 - **Test cases:**
 - Send the documented happy-path request and record the status and body.
 - Repeat with an empty body, whitespace, a very long field, the wrong JSON types, an emoji, and a non-English string.
@@ -342,11 +342,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Point an upstream or the database at a closed port and confirm the failure is a tool or API error, not a crash.
 - **Dependencies:** MCP-03, DATA-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** initialize returned protocol 2025-03-26. A blank body returned -32700.
 
 ### MCP-02 GET and DELETE /mcp
 
