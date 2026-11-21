@@ -15,7 +15,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | DATA-03 | Demo seed | P0 | PASSED | 0 | 0 | 0 | Seeded tools are orders (postgres) and catalog (mcp_http). |
 | VAULT-01 | AES-GCM tool vault | P0 | PASSED | 0 | 0 | 0 | Vault tests passed. Stored ciphertext is not the plaintext password. |
 | VAULT-02 | Tool secrets stay write-only | P0 | PASSED | 0 | 0 | 0 | GET /v1/tools has no secret. A foreign DSN was rejected before it was stored. |
-| CORE-01 | Proxy pipeline | P0 | NOT STARTED | | | | |
+| CORE-01 | Proxy pipeline | P0 | PASSED | 0 | 0 | 0 | Quickstart: SELECT allowed, DROP denied, DELETE only after approval. |
 | CORE-02 | JSON rules policy | P0 | NOT STARTED | | | | |
 | CORE-03 | Rego policy engine | P1 | NOT STARTED | | | | |
 | CORE-04 | SQL classifier | P0 | NOT STARTED | | | | |
@@ -212,14 +212,14 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### CORE-01 Proxy pipeline
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/proxy/proxy.go, internal/canonical/json.go, internal/redact/redact.go
 - **Expected behavior:** A tools/call is canonicalized, redacted, evaluated by policy, and written to the audit log before any upstream connection. Allow forwards. Deny and no match stop before the upstream. Approval waits.
 - **Acceptance:**
-- [ ] An allowed call reaches the upstream only after an audit event exists.
-- [ ] A denied call does not open the upstream.
-- [ ] The audit payload does not contain a raw secret-shaped argument.
+- [x] An allowed call reaches the upstream only after an audit event exists.
+- [x] A denied call does not open the upstream.
+- [x] The audit payload does not contain a raw secret-shaped argument.
 - **Test cases:**
 - Send the documented happy-path request and record the status and body.
 - Repeat with an empty body, whitespace, a very long field, the wrong JSON types, an emoji, and a non-English string.
@@ -229,11 +229,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Point an upstream or the database at a closed port and confirm the failure is a tool or API error, not a crash.
 - **Dependencies:** CORE-02, AUDIT-01, VAULT-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Quickstart: SELECT allowed, DROP denied, DELETE only after approval.
 
 ### CORE-02 JSON rules policy
 
