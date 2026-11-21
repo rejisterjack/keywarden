@@ -23,7 +23,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | MCP-01 | POST /mcp JSON-RPC | P0 | PASSED | 0 | 0 | 0 | initialize returned protocol 2025-03-26. A blank body returned -32700. |
 | MCP-02 | GET and DELETE /mcp | P1 | PASSED | 0 | 0 | 0 | GET /mcp with a task token is 405. DELETE /mcp is 204. |
 | MCP-03 | Task token authentication | P0 | PASSED | 0 | 0 | 0 | A revoked task token then received 401. |
-| MCP-04 | toolId__toolName calls | P0 | NOT STARTED | | | | |
+| MCP-04 | toolId__toolName calls | P0 | PASSED | 0 | 0 | 0 | A name without toolId__name returned -32000. catalog__lookup_order succeeded. |
 | TOOL-01 | Postgres tool | P0 | NOT STARTED | | | | |
 | TOOL-02 | mcp_http upstream | P1 | NOT STARTED | | | | |
 | TOOL-03 | mcp_stdio | P1 | NOT STARTED | | | | |
@@ -396,25 +396,25 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### MCP-04 toolId__toolName calls
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** docs/architecture.md, internal/proxy/proxy.go, internal/store/migrations/001_init.sql
 - **Expected behavior:** tools/call names split on the first `__`. The left side is the tool id and the right side is the upstream tool name. A tool id itself cannot contain `__`.
 - **Acceptance:**
-- [ ] orders__query reaches the orders tool.
-- [ ] A name with no separator is rejected.
-- [ ] A name whose tool id belongs to another org is rejected.
+- [x] orders__query reaches the orders tool.
+- [x] A name with no separator is rejected.
+- [x] A name whose tool id belongs to another org is rejected.
 - **Test cases:**
 - Call orders__query.
 - Call `orders`, `__query`, and `nope__query`.
 - Call a name that includes a script tag.
 - **Dependencies:** MCP-01, CORE-05.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** A name without toolId__name returned -32000. catalog__lookup_order succeeded.
 
 ### TOOL-01 Postgres tool
 
