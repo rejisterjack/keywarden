@@ -61,7 +61,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | DASH-01 | Dashboard password session | P0 | BLOCKED | 1 | 1 | 0 | Session cookie is Secure only when the API URL is https, so the local HTTP console can keep it. Login was not clicked: Chrome DevTools MCP is not connected. |
 | DASH-02 | Operator console | P0 | BLOCKED | 0 | 0 | 0 | Chrome DevTools MCP is not connected, so the console was not clicked through. |
 | DASH-03 | Marketing landing | P1 | BLOCKED | 0 | 0 | 0 | Chrome DevTools MCP is not connected, so the landing page was not viewed. |
-| DASH-04 | Proxy unreachable | P1 | NOT STARTED | | | | |
+| DASH-04 | Proxy unreachable | P1 | BLOCKED | 0 | 0 | 0 | Chrome DevTools MCP is not connected, so a dashboard pointed at a closed proxy was not opened. |
 | DASH-05 | Dashboard production build | P0 | NOT STARTED | | | | |
 | DASH-06 | Custom not-found page | P1 | NOT STARTED | | | | |
 | E2E-01 | Playwright console journey | P1 | NOT STARTED | | | | |
@@ -1265,7 +1265,7 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DASH-04 Proxy unreachable
 
-- **Status:** NOT STARTED
+- **Status:** BLOCKED
 - **Priority:** P1
 - **Files:** dashboard/components/proxy-down.tsx, dashboard/lib/api.ts
 - **Expected behavior:** When the dashboard cannot reach KEYWARDEN_API_URL, the console shows the proxy-down state instead of an empty success. The page does not print the admin token.
@@ -1280,11 +1280,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - The retry or explanation is a text control, not only a color.
 - **Dependencies:** DASH-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Chrome DevTools MCP is not connected, so a dashboard pointed at a closed proxy was not opened.
 
 ### DASH-05 Dashboard production build
 
