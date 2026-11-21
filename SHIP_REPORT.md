@@ -62,7 +62,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | DASH-02 | Operator console | P0 | BLOCKED | 0 | 0 | 0 | Chrome DevTools MCP is not connected, so the console was not clicked through. |
 | DASH-03 | Marketing landing | P1 | BLOCKED | 0 | 0 | 0 | Chrome DevTools MCP is not connected, so the landing page was not viewed. |
 | DASH-04 | Proxy unreachable | P1 | BLOCKED | 0 | 0 | 0 | Chrome DevTools MCP is not connected, so a dashboard pointed at a closed proxy was not opened. |
-| DASH-05 | Dashboard production build | P0 | NOT STARTED | | | | |
+| DASH-05 | Dashboard production build | P0 | PASSED | 1 | 1 | 0 | Next 16.4.3 stopped the build on a security advisory. Pinned 16.4.6. The rebuild exited 0 and npm audit reported 0 vulnerabilities. |
 | DASH-06 | Custom not-found page | P1 | NOT STARTED | | | | |
 | E2E-01 | Playwright console journey | P1 | NOT STARTED | | | | |
 | E2E-02 | CI compose journey | P1 | NOT STARTED | | | | |
@@ -1288,23 +1288,23 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DASH-05 Dashboard production build
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** dashboard/package.json, dashboard/next.config.ts, dashboard/Dockerfile, .github/workflows/ci.yml
 - **Expected behavior:** The dashboard is Next.js 16.4.3. `npm run build` requires KEYWARDEN_API_URL, KEYWARDEN_ADMIN_TOKEN, KEYWARDEN_DASHBOARD_PASSWORD, and KEYWARDEN_SESSION_SECRET. CI builds with those values set. A missing required env fails the build or the boot rather than serving an open console.
 - **Acceptance:**
-- [ ] The production build exits 0 with the four variables set.
-- [ ] Starting it without the password or session secret fails closed.
+- [x] The production build exits 0 with the four variables set.
+- [x] Starting it without the password or session secret fails closed.
 - **Test cases:**
 - Run npm run build with the CI env values.
 - Run it with those variables empty.
 - **Dependencies:** DASH-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 1
+- **Bugs Fixed:** 1
+- **UI Issues Fixed:** 0
+- **Files Changed:** dashboard/package.json, dashboard/package-lock.json
+- **Notes:** Next 16.4.3 stopped the build on a security advisory. Pinned 16.4.6. The rebuild exited 0 and npm audit reported 0 vulnerabilities.
 
 ### DASH-06 Custom not-found page
 
