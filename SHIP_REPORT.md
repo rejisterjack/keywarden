@@ -35,7 +35,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | AUTH-02 | Create organizations and org tokens | P1 | PASSED | 0 | 0 | 0 | Quickstart created orgs with the process admin token. |
 | AUTH-03 | Cross-organization isolation | P0 | PASSED | 0 | 0 | 0 | An agent in one org was not visible from the other. |
 | AUTH-04 | Task lifetime and revoke | P0 | PASSED | 0 | 0 | 0 | TTL above 24 hours was 400. Revoke then tools/list was 401. |
-| APPROVE-01 | Approval wait and decision | P0 | NOT STARTED | | | | |
+| APPROVE-01 | Approval wait and decision | P0 | PASSED | 0 | 0 | 0 | DELETE waited, approve returned DELETE 1. |
 | APPROVE-02 | Approval bound to the argument hash | P0 | NOT STARTED | | | | |
 | APPROVE-03 | Timeout and restart do not forward | P0 | NOT STARTED | | | | |
 | AUDIT-01 | Per-organization hash chain | P0 | NOT STARTED | | | | |
@@ -676,25 +676,25 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### APPROVE-01 Approval wait and decision
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/approval/wait.go, internal/httpapi/server.go, dashboard/app/(console)/approvals/page.tsx
 - **Expected behavior:** A require_approval rule inserts a pending approval bound to the call and holds the MCP request until a human approves, denies, or the rule timeout passes. Approve forwards the original call. Deny does not.
 - **Acceptance:**
-- [ ] A DELETE under the demo policy waits.
-- [ ] Approving it from the API or the dashboard completes the call.
-- [ ] Denying it returns a tool error and does not touch the upstream.
+- [x] A DELETE under the demo policy waits.
+- [x] Approving it from the API or the dashboard completes the call.
+- [x] Denying it returns a tool error and does not touch the upstream.
 - **Test cases:**
 - Start a mutating call and approve it.
 - Start one and deny it.
 - Decide an unknown approval id.
 - **Dependencies:** CORE-02, API-07, DASH-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** DELETE waited, approve returned DELETE 1.
 
 ### APPROVE-02 Approval bound to the argument hash
 
