@@ -33,7 +33,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | TOOL-07 | azure_http bearer helper | P2 | PASSED | 0 | 0 | 0 | Azure bearer tests passed. |
 | AUTH-01 | Process admin token and org admin token | P0 | PASSED | 0 | 0 | 0 | Missing, short, and task tokens on /v1/agents returned 401. |
 | AUTH-02 | Create organizations and org tokens | P1 | PASSED | 0 | 0 | 0 | Quickstart created orgs with the process admin token. |
-| AUTH-03 | Cross-organization isolation | P0 | NOT STARTED | | | | |
+| AUTH-03 | Cross-organization isolation | P0 | PASSED | 0 | 0 | 0 | An agent in one org was not visible from the other. |
 | AUTH-04 | Task lifetime and revoke | P0 | NOT STARTED | | | | |
 | APPROVE-01 | Approval wait and decision | P0 | NOT STARTED | | | | |
 | APPROVE-02 | Approval bound to the argument hash | P0 | NOT STARTED | | | | |
@@ -630,13 +630,13 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### AUTH-03 Cross-organization isolation
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/store/orgs.go, internal/httpapi/server.go
 - **Expected behavior:** A token for organization A cannot list, approve, or call organization B. MCP inherits the org from the task token. Admin routes inherit it from the kwa_ token.
 - **Acceptance:**
-- [ ] Org B's admin token does not see org A's agents, approvals, or audit events.
-- [ ] Org A's task token cannot call org B's tool.
+- [x] Org B's admin token does not see org A's agents, approvals, or audit events.
+- [x] Org A's task token cannot call org B's tool.
 - **Test cases:**
 - Send the documented happy-path request and record the status and body.
 - Repeat with an empty body, whitespace, a very long field, the wrong JSON types, an emoji, and a non-English string.
@@ -646,11 +646,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Point an upstream or the database at a closed port and confirm the failure is a tool or API error, not a crash.
 - **Dependencies:** AUTH-02, MCP-03.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** An agent in one org was not visible from the other.
 
 ### AUTH-04 Task lifetime and revoke
 
