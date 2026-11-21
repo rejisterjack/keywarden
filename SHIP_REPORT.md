@@ -45,7 +45,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | API-03 | Agents | P0 | PASSED | 0 | 0 | 0 | A slug was required. A script-tag name was stored as data. |
 | API-04 | Tools | P0 | PASSED | 0 | 0 | 0 | A secret string was 400. A foreign JSON secret was rejected in demo mode. |
 | API-05 | Policies | P0 | PASSED | 0 | 0 | 0 | Policy boundary tests passed. The seeded policy is version 1 and active. |
-| API-06 | Tasks admin API | P0 | NOT STARTED | | | | |
+| API-06 | Tasks admin API | P0 | PASSED | 0 | 0 | 0 | The task list omitted the plaintext token. |
 | API-07 | Approvals admin API | P0 | NOT STARTED | | | | |
 | API-08 | Audit list | P1 | NOT STARTED | | | | |
 | RATE-01 | MCP rate limit | P1 | NOT STARTED | | | | |
@@ -896,14 +896,14 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### API-06 Tasks admin API
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/httpapi/server.go, dashboard/app/(console)/tasks/page.tsx
 - **Expected behavior:** GET /v1/tasks lists tasks without the plaintext token. POST creates one and returns the token once. POST /v1/tasks/{id}/revoke revokes it.
 - **Acceptance:**
-- [ ] Create returns kwt_ once.
-- [ ] The following list does not contain that secret.
-- [ ] Revoke makes the token fail on /mcp.
+- [x] Create returns kwt_ once.
+- [x] The following list does not contain that secret.
+- [x] Revoke makes the token fail on /mcp.
 - **Test cases:**
 - Send the documented happy-path request and record the status and body.
 - Repeat with an empty body, whitespace, a very long field, the wrong JSON types, an emoji, and a non-English string.
@@ -913,11 +913,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Point an upstream or the database at a closed port and confirm the failure is a tool or API error, not a crash.
 - **Dependencies:** AUTH-04.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** The task list omitted the plaintext token.
 
 ### API-07 Approvals admin API
 
