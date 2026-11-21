@@ -68,7 +68,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | E2E-02 | CI compose journey | P1 | BLOCKED | 0 | 0 | 0 | Quickstart passed. The unreachable-dashboard container and the Playwright step were not run. |
 | DEVOPS-01 | GitHub Actions CI | P1 | PASSED | 0 | 0 | 0 | go test, go vet, staticcheck v0.8.2, and govulncheck v1.9.0 passed. One required-module advisory is not called. |
 | DEVOPS-02 | Proxy Docker image | P1 | PASSED | 0 | 0 | 0 | The proxy image env is only PATH and SSL_CERT_FILE. |
-| DEVOPS-03 | Docker Compose demo | P0 | NOT STARTED | | | | |
+| DEVOPS-03 | Docker Compose demo | P0 | PASSED | 0 | 0 | 0 | Compose is up. healthz, readyz, and the dashboard returned 200. |
 | DEVOPS-04 | Release workflow | P2 | NOT STARTED | | | | |
 | DEVOPS-05 | Railway config | P2 | NOT STARTED | | | | |
 | TEST-01 | Go test suite | P0 | NOT STARTED | | | | |
@@ -1411,23 +1411,23 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DEVOPS-03 Docker Compose demo
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** deploy/compose/docker-compose.yml, deploy/compose/docker-compose.local.yml, deploy/compose/initdb/01-orders.sql, deploy/compose/initdb/02-orders.sh
 - **Expected behavior:** The compose file starts Postgres, the proxy, the dashboard, and the fictional orders database. The published local password and admin token are demo values. README tells operators to replace them before storing a real credential.
 - **Acceptance:**
-- [ ] compose up brings up a proxy that answers /healthz and a dashboard on port 3000.
-- [ ] The orders init script loads fictional data.
-- [ ] The demo password signs in.
+- [x] compose up brings up a proxy that answers /healthz and a dashboard on port 3000.
+- [x] The orders init script loads fictional data.
+- [x] The demo password signs in.
 - **Test cases:**
 - Start compose. Open the dashboard. Stop compose and start it again.
 - **Dependencies:** DEVOPS-02, DASH-05, DATA-03.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Compose is up. healthz, readyz, and the dashboard returned 200.
 
 ### DEVOPS-04 Release workflow
 
