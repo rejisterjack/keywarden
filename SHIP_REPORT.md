@@ -59,7 +59,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | SEC-02 | MCP body size limit | P1 | PASSED | 0 | 0 | 0 | A 2MB POST /mcp returned JSON-RPC -32700 and did not list tools. |
 | SEC-03 | Timeouts and shutdown | P1 | PASSED | 0 | 0 | 0 | The proxy became ready again after a container restart. |
 | DASH-01 | Dashboard password session | P0 | BLOCKED | 1 | 1 | 0 | Session cookie is Secure only when the API URL is https, so the local HTTP console can keep it. Login was not clicked: Chrome DevTools MCP is not connected. |
-| DASH-02 | Operator console | P0 | NOT STARTED | | | | |
+| DASH-02 | Operator console | P0 | BLOCKED | 0 | 0 | 0 | Chrome DevTools MCP is not connected, so the console was not clicked through. |
 | DASH-03 | Marketing landing | P1 | NOT STARTED | | | | |
 | DASH-04 | Proxy unreachable | P1 | NOT STARTED | | | | |
 | DASH-05 | Dashboard production build | P0 | NOT STARTED | | | | |
@@ -1208,7 +1208,7 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DASH-02 Operator console
 
-- **Status:** NOT STARTED
+- **Status:** BLOCKED
 - **Priority:** P0
 - **Files:** dashboard/app/(console)/approvals/page.tsx, tasks/page.tsx, agents/page.tsx, tools/page.tsx, policy/page.tsx, audit/page.tsx, dashboard/components/nav.tsx, dashboard/lib/actions.ts
 - **Expected behavior:** The signed-in console lists approvals, tasks, agents, tools, the active policy, and the audit chain. Actions call the admin API on the server. Empty lists have their own copy. The console uses the light paper tokens in globals.css.
@@ -1229,11 +1229,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Confirm the browser console has no error from the action.
 - **Dependencies:** DASH-01, API-03, API-04, API-05, API-06, API-07, AUDIT-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Chrome DevTools MCP is not connected, so the console was not clicked through.
 
 ### DASH-03 Marketing landing
 
