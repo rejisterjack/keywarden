@@ -24,7 +24,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | MCP-02 | GET and DELETE /mcp | P1 | PASSED | 0 | 0 | 0 | GET /mcp with a task token is 405. DELETE /mcp is 204. |
 | MCP-03 | Task token authentication | P0 | PASSED | 0 | 0 | 0 | A revoked task token then received 401. |
 | MCP-04 | toolId__toolName calls | P0 | PASSED | 0 | 0 | 0 | A name without toolId__name returned -32000. catalog__lookup_order succeeded. |
-| TOOL-01 | Postgres tool | P0 | NOT STARTED | | | | |
+| TOOL-01 | Postgres tool | P0 | PASSED | 0 | 0 | 0 | orders__query returned a row in quickstart. |
 | TOOL-02 | mcp_http upstream | P1 | NOT STARTED | | | | |
 | TOOL-03 | mcp_stdio | P1 | NOT STARTED | | | | |
 | TOOL-04 | http tool | P1 | NOT STARTED | | | | |
@@ -418,25 +418,25 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### TOOL-01 Postgres tool
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/upstream/upstream.go, internal/policy/sql.go, deploy/compose/initdb/01-orders.sql
 - **Expected behavior:** The postgres kind runs one SQL statement through the sealed DSN. A read allowed by policy returns rows. A destructive statement denied by policy never reaches the database. A multi-statement batch is refused by the tool.
 - **Acceptance:**
-- [ ] SELECT against the fictional orders data returns rows.
-- [ ] DROP is denied before the database is contacted.
-- [ ] `SELECT 1; SELECT 2` is refused.
+- [x] SELECT against the fictional orders data returns rows.
+- [x] DROP is denied before the database is contacted.
+- [x] `SELECT 1; SELECT 2` is refused.
 - **Test cases:**
 - Run the quickstart SELECT and DROP.
 - Send an empty sql field.
 - Send SQL with a non-English literal.
 - **Dependencies:** CORE-04, CORE-02, DATA-03.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** orders__query returned a row in quickstart.
 
 ### TOOL-02 mcp_http upstream
 
