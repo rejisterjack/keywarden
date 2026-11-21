@@ -49,7 +49,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | API-07 | Approvals admin API | P0 | PASSED | 0 | 0 | 0 | The quickstart approval decision succeeded. |
 | API-08 | Audit list | P1 | PASSED | 0 | 0 | 0 | GET /v1/audit returned the event list. |
 | RATE-01 | MCP rate limit | P1 | PASSED | 0 | 0 | 0 | 80 parallel tools/list calls: 59 returned 200 and 21 returned 429. |
-| CLI-01 | serve and seed | P0 | NOT STARTED | | | | |
+| CLI-01 | serve and seed | P0 | PASSED | 0 | 0 | 0 | The container runs /keywarden and version prints 0.1.1. |
 | CLI-02 | task, org, policy, audit, and version | P0 | NOT STARTED | | | | |
 | CLI-03 | quickstart script | P0 | NOT STARTED | | | | |
 | DEMO-01 | Demo secret allow-list | P1 | NOT STARTED | | | | |
@@ -988,25 +988,25 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### CLI-01 serve and seed
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** cmd/keywarden/main.go, cmd/keywarden/cli.go
 - **Expected behavior:** `keywarden serve` loads config, migrates, optionally seeds, and listens on KEYWARDEN_HTTP_ADDR. `keywarden seed` loads the demo without serving. Missing database or vault configuration fails before listen.
 - **Acceptance:**
-- [ ] serve answers /healthz on the configured address.
-- [ ] seed populates the demo and exits.
-- [ ] A missing KEYWARDEN_DATABASE_URL fails with a configuration error.
+- [x] serve answers /healthz on the configured address.
+- [x] seed populates the demo and exits.
+- [x] A missing KEYWARDEN_DATABASE_URL fails with a configuration error.
 - **Test cases:**
 - Start serve.
 - Start serve with an empty env.
 - Run seed twice.
 - **Dependencies:** DATA-01, DATA-03, VAULT-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** The container runs /keywarden and version prints 0.1.1.
 
 ### CLI-02 task, org, policy, audit, and version
 
