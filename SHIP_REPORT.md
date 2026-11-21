@@ -13,7 +13,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | DATA-01 | Postgres schema migrations | P0 | PASSED | 0 | 0 | 0 | Migrations 1 through 5 are applied. A proxy restart left the count at 5. |
 | DATA-02 | Organization scope and the default org | P0 | PASSED | 0 | 0 | 0 | Quickstart created two orgs and a cross-org probe was not visible. |
 | DATA-03 | Demo seed | P0 | PASSED | 0 | 0 | 0 | Seeded tools are orders (postgres) and catalog (mcp_http). |
-| VAULT-01 | AES-GCM tool vault | P0 | NOT STARTED | | | | |
+| VAULT-01 | AES-GCM tool vault | P0 | PASSED | 0 | 0 | 0 | Vault tests passed. Stored ciphertext is not the plaintext password. |
 | VAULT-02 | Tool secrets stay write-only | P0 | NOT STARTED | | | | |
 | CORE-01 | Proxy pipeline | P0 | NOT STARTED | | | | |
 | CORE-02 | JSON rules policy | P0 | NOT STARTED | | | | |
@@ -165,25 +165,25 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### VAULT-01 AES-GCM tool vault
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/vault/vault.go, internal/vault/vault_test.go, internal/config/config.go
 - **Expected behavior:** Tool secrets are encrypted with AES-GCM before they are stored. KEYWARDEN_VAULT_KEY must decode to 32 bytes. A missing or wrong-length key prevents the process from starting.
 - **Acceptance:**
-- [ ] A 32-byte key encrypts and decrypts a secret.
-- [ ] A different key cannot decrypt it.
-- [ ] A 16-byte or empty key fails configuration.
+- [x] A 32-byte key encrypts and decrypts a secret.
+- [x] A different key cannot decrypt it.
+- [x] A 16-byte or empty key fails configuration.
 - **Test cases:**
 - Use the documented demo key.
 - Omit the key.
 - Pass a key that is not valid base64.
 - **Dependencies:** KEYWARDEN_VAULT_KEY.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Vault tests passed. Stored ciphertext is not the plaintext password.
 
 ### VAULT-02 Tool secrets stay write-only
 
