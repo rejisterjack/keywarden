@@ -46,7 +46,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | API-04 | Tools | P0 | PASSED | 0 | 0 | 0 | A secret string was 400. A foreign JSON secret was rejected in demo mode. |
 | API-05 | Policies | P0 | PASSED | 0 | 0 | 0 | Policy boundary tests passed. The seeded policy is version 1 and active. |
 | API-06 | Tasks admin API | P0 | PASSED | 0 | 0 | 0 | The task list omitted the plaintext token. |
-| API-07 | Approvals admin API | P0 | NOT STARTED | | | | |
+| API-07 | Approvals admin API | P0 | PASSED | 0 | 0 | 0 | The quickstart approval decision succeeded. |
 | API-08 | Audit list | P1 | NOT STARTED | | | | |
 | RATE-01 | MCP rate limit | P1 | NOT STARTED | | | | |
 | CLI-01 | serve and seed | P0 | NOT STARTED | | | | |
@@ -921,24 +921,24 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### API-07 Approvals admin API
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/httpapi/server.go, dashboard/lib/actions.ts
 - **Expected behavior:** GET /v1/approvals lists pending and decided calls. POST /v1/approvals/{id} records approve or deny for the caller's org. An approval id from another org is not visible.
 - **Acceptance:**
-- [ ] A waiting call appears in the list.
-- [ ] approve and deny are accepted once.
-- [ ] Another org's token cannot decide it.
+- [x] A waiting call appears in the list.
+- [x] approve and deny are accepted once.
+- [x] Another org's token cannot decide it.
 - **Test cases:**
 - Decide with approve, deny, an empty body, and an unknown decision.
 - Submit the decision twice.
 - **Dependencies:** APPROVE-01, AUTH-03.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** The quickstart approval decision succeeded.
 
 ### API-08 Audit list
 
