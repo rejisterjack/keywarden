@@ -47,7 +47,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | API-05 | Policies | P0 | PASSED | 0 | 0 | 0 | Policy boundary tests passed. The seeded policy is version 1 and active. |
 | API-06 | Tasks admin API | P0 | PASSED | 0 | 0 | 0 | The task list omitted the plaintext token. |
 | API-07 | Approvals admin API | P0 | PASSED | 0 | 0 | 0 | The quickstart approval decision succeeded. |
-| API-08 | Audit list | P1 | NOT STARTED | | | | |
+| API-08 | Audit list | P1 | PASSED | 0 | 0 | 0 | GET /v1/audit returned the event list. |
 | RATE-01 | MCP rate limit | P1 | NOT STARTED | | | | |
 | CLI-01 | serve and seed | P0 | NOT STARTED | | | | |
 | CLI-02 | task, org, policy, audit, and version | P0 | NOT STARTED | | | | |
@@ -942,14 +942,14 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### API-08 Audit list
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** internal/httpapi/server.go, internal/store/audit.go
 - **Expected behavior:** GET /v1/audit returns the caller's org chain, newest or in chain order as the handler implements, and accepts the filters the handler reads. It does not return another org's events.
 - **Acceptance:**
-- [ ] Events from this org are listed.
-- [ ] Events from another org are absent.
-- [ ] A filter for an unknown agent returns an empty list rather than an error that leaks data.
+- [x] Events from this org are listed.
+- [x] Events from another org are absent.
+- [x] A filter for an unknown agent returns an empty list rather than an error that leaks data.
 - **Test cases:**
 - Send the documented happy-path request and record the status and body.
 - Repeat with an empty body, whitespace, a very long field, the wrong JSON types, an emoji, and a non-English string.
@@ -959,11 +959,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Point an upstream or the database at a closed port and confirm the failure is a tool or API error, not a crash.
 - **Dependencies:** AUDIT-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** GET /v1/audit returned the event list.
 
 ### RATE-01 MCP rate limit
 
