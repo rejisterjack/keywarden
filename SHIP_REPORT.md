@@ -36,7 +36,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | AUTH-03 | Cross-organization isolation | P0 | PASSED | 0 | 0 | 0 | An agent in one org was not visible from the other. |
 | AUTH-04 | Task lifetime and revoke | P0 | PASSED | 0 | 0 | 0 | TTL above 24 hours was 400. Revoke then tools/list was 401. |
 | APPROVE-01 | Approval wait and decision | P0 | PASSED | 0 | 0 | 0 | DELETE waited, approve returned DELETE 1. |
-| APPROVE-02 | Approval bound to the argument hash | P0 | NOT STARTED | | | | |
+| APPROVE-02 | Approval bound to the argument hash | P0 | PASSED | 0 | 0 | 0 | TestApprovalIsBoundToArgumentHash passed. |
 | APPROVE-03 | Timeout and restart do not forward | P0 | NOT STARTED | | | | |
 | AUDIT-01 | Per-organization hash chain | P0 | NOT STARTED | | | | |
 | AUDIT-02 | Audit verify | P0 | NOT STARTED | | | | |
@@ -698,22 +698,22 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### APPROVE-02 Approval bound to the argument hash
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/approval/wait.go, internal/canonical/json.go, docs/limitations.md
 - **Expected behavior:** An approval covers the hash of that call's canonical arguments and nothing else. It does not authorize a later call or the same tool with different arguments.
 - **Acceptance:**
-- [ ] Changing the SQL after the approval was created does not reuse it.
-- [ ] A second identical call waits for its own approval.
+- [x] Changing the SQL after the approval was created does not reuse it.
+- [x] A second identical call waits for its own approval.
 - **Test cases:**
 - Approve one DELETE, then send a different DELETE with the same task token.
 - **Dependencies:** APPROVE-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** TestApprovalIsBoundToArgumentHash passed.
 
 ### APPROVE-03 Timeout and restart do not forward
 
