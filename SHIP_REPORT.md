@@ -30,7 +30,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | TOOL-04 | http tool | P1 | PASSED | 0 | 0 | 0 | Demo mode returned 400 http tools are disabled. HTTP proxy tests passed. |
 | TOOL-05 | aws_http SigV4 | P1 | PASSED | 0 | 0 | 0 | AWS signing tests passed. Demo mode refuses cloud tools. |
 | TOOL-06 | gcp_http bearer helper | P2 | PASSED | 0 | 0 | 0 | GCP bearer tests passed. |
-| TOOL-07 | azure_http bearer helper | P2 | NOT STARTED | | | | |
+| TOOL-07 | azure_http bearer helper | P2 | PASSED | 0 | 0 | 0 | Azure bearer tests passed. |
 | AUTH-01 | Process admin token and org admin token | P0 | NOT STARTED | | | | |
 | AUTH-02 | Create organizations and org tokens | P1 | NOT STARTED | | | | |
 | AUTH-03 | Cross-organization isolation | P0 | NOT STARTED | | | | |
@@ -559,14 +559,14 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### TOOL-07 azure_http bearer helper
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P2
 - **Files:** internal/upstream/cloudhttp.go, internal/store/migrations/005_gcp_azure_http_kind.sql
 - **Expected behavior:** azure_http is the same bearer helper as gcp_http for a sealed Azure access token. It is not Entra ID or an ARM role assignment. Demo mode refuses the kind.
 - **Acceptance:**
-- [ ] An allowed request injects the sealed token.
-- [ ] A missing token fails configuration of the tool.
-- [ ] Demo mode rejects the kind.
+- [x] An allowed request injects the sealed token.
+- [x] A missing token fails configuration of the tool.
+- [x] Demo mode rejects the kind.
 - **Test cases:**
 - Send the documented happy-path request and record the status and body.
 - Repeat with an empty body, whitespace, a very long field, the wrong JSON types, an emoji, and a non-English string.
@@ -576,11 +576,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Point an upstream or the database at a closed port and confirm the failure is a tool or API error, not a crash.
 - **Dependencies:** TOOL-06.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Azure bearer tests passed.
 
 ### AUTH-01 Process admin token and org admin token
 
