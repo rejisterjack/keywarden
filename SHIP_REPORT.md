@@ -32,7 +32,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | TOOL-06 | gcp_http bearer helper | P2 | PASSED | 0 | 0 | 0 | GCP bearer tests passed. |
 | TOOL-07 | azure_http bearer helper | P2 | PASSED | 0 | 0 | 0 | Azure bearer tests passed. |
 | AUTH-01 | Process admin token and org admin token | P0 | PASSED | 0 | 0 | 0 | Missing, short, and task tokens on /v1/agents returned 401. |
-| AUTH-02 | Create organizations and org tokens | P1 | NOT STARTED | | | | |
+| AUTH-02 | Create organizations and org tokens | P1 | PASSED | 0 | 0 | 0 | Quickstart created orgs with the process admin token. |
 | AUTH-03 | Cross-organization isolation | P0 | NOT STARTED | | | | |
 | AUTH-04 | Task lifetime and revoke | P0 | NOT STARTED | | | | |
 | APPROVE-01 | Approval wait and decision | P0 | NOT STARTED | | | | |
@@ -609,24 +609,24 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### AUTH-02 Create organizations and org tokens
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** internal/httpapi/server.go, internal/store/orgs.go, cmd/keywarden/cli.go
 - **Expected behavior:** With single-tenant off, POST /v1/orgs and `keywarden org create` use the process admin token to create a tenant and return the first kwa_ token. POST /v1/orgs/{id}/tokens issues another token. GET /v1/orgs lists tenants for the process token.
 - **Acceptance:**
-- [ ] Creating an org returns one kwa_ token once.
-- [ ] That token administers only the new org.
-- [ ] A second token can be issued with a label.
+- [x] Creating an org returns one kwa_ token once.
+- [x] That token administers only the new org.
+- [x] A second token can be issued with a label.
 - **Test cases:**
 - Create an org with an empty slug, a duplicate slug, and a non-English name.
 - Issue a token without the process admin token.
 - **Dependencies:** AUTH-01, DATA-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Quickstart created orgs with the process admin token.
 
 ### AUTH-03 Cross-organization isolation
 
