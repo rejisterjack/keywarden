@@ -50,7 +50,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | API-08 | Audit list | P1 | PASSED | 0 | 0 | 0 | GET /v1/audit returned the event list. |
 | RATE-01 | MCP rate limit | P1 | PASSED | 0 | 0 | 0 | 80 parallel tools/list calls: 59 returned 200 and 21 returned 429. |
 | CLI-01 | serve and seed | P0 | PASSED | 0 | 0 | 0 | The container runs /keywarden and version prints 0.1.1. |
-| CLI-02 | task, org, policy, audit, and version | P0 | NOT STARTED | | | | |
+| CLI-02 | task, org, policy, audit, and version | P0 | PASSED | 0 | 0 | 0 | CLI command tests passed. |
 | CLI-03 | quickstart script | P0 | NOT STARTED | | | | |
 | DEMO-01 | Demo secret allow-list | P1 | NOT STARTED | | | | |
 | DEMO-02 | Demo lock on mutations | P1 | NOT STARTED | | | | |
@@ -1010,26 +1010,26 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### CLI-02 task, org, policy, audit, and version
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** cmd/keywarden/cli.go, cmd/keywarden/cli_test.go
 - **Expected behavior:** task, org, policy, and audit talk to KEYWARDEN_URL with KEYWARDEN_ADMIN_TOKEN. version prints the stamped version. They do not open Postgres themselves.
 - **Acceptance:**
-- [ ] task create prints a kwt_ token.
-- [ ] policy apply sends the file to the proxy.
-- [ ] audit verify reports the chain.
-- [ ] version prints 0.1.1 for an unstamped build.
+- [x] task create prints a kwt_ token.
+- [x] policy apply sends the file to the proxy.
+- [x] audit verify reports the chain.
+- [x] version prints 0.1.1 for an unstamped build.
 - **Test cases:**
 - Run each command with no admin token.
 - Pass an empty policy file.
 - Point KEYWARDEN_URL at a closed port.
 - **Dependencies:** CLI-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** CLI command tests passed.
 
 ### CLI-03 quickstart script
 
