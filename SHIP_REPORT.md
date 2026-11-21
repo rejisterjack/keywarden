@@ -64,7 +64,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | DASH-04 | Proxy unreachable | P1 | BLOCKED | 0 | 0 | 0 | Chrome DevTools MCP is not connected, so a dashboard pointed at a closed proxy was not opened. |
 | DASH-05 | Dashboard production build | P0 | PASSED | 1 | 1 | 0 | Next 16.4.3 stopped the build on a security advisory. Pinned 16.4.6. The rebuild exited 0 and npm audit reported 0 vulnerabilities. |
 | DASH-06 | Custom not-found page | P1 | BLOCKED | 0 | 0 | 0 | A missing URL returned the Page not found shell and the title Keywarden. Widths, contrast, and keyboard were not checked because Chrome DevTools MCP is not connected. |
-| E2E-01 | Playwright console journey | P1 | NOT STARTED | | | | |
+| E2E-01 | Playwright console journey | P1 | BLOCKED | 0 | 0 | 0 | The Playwright spec was not launched. The required browser is Chrome DevTools, and that MCP is not connected. |
 | E2E-02 | CI compose journey | P1 | NOT STARTED | | | | |
 | DEVOPS-01 | GitHub Actions CI | P1 | NOT STARTED | | | | |
 | DEVOPS-02 | Proxy Docker image | P1 | NOT STARTED | | | | |
@@ -1335,7 +1335,7 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### E2E-01 Playwright console journey
 
-- **Status:** NOT STARTED
+- **Status:** BLOCKED
 - **Priority:** P1
 - **Files:** dashboard/e2e/console.spec.ts, dashboard/playwright.config.ts
 - **Expected behavior:** The existing Playwright spec signs in, issues or views a task token, and checks the audit chain against a running demo. This pass will run that spec rather than add a second browser harness.
@@ -1346,11 +1346,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Run npm run test:e2e once the demo is up.
 - **Dependencies:** DEVOPS-03, DASH-01, DASH-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** The Playwright spec was not launched. The required browser is Chrome DevTools, and that MCP is not connected.
 
 ### E2E-02 CI compose journey
 
