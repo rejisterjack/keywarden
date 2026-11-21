@@ -31,7 +31,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | TOOL-05 | aws_http SigV4 | P1 | PASSED | 0 | 0 | 0 | AWS signing tests passed. Demo mode refuses cloud tools. |
 | TOOL-06 | gcp_http bearer helper | P2 | PASSED | 0 | 0 | 0 | GCP bearer tests passed. |
 | TOOL-07 | azure_http bearer helper | P2 | PASSED | 0 | 0 | 0 | Azure bearer tests passed. |
-| AUTH-01 | Process admin token and org admin token | P0 | NOT STARTED | | | | |
+| AUTH-01 | Process admin token and org admin token | P0 | PASSED | 0 | 0 | 0 | Missing, short, and task tokens on /v1/agents returned 401. |
 | AUTH-02 | Create organizations and org tokens | P1 | NOT STARTED | | | | |
 | AUTH-03 | Cross-organization isolation | P0 | NOT STARTED | | | | |
 | AUTH-04 | Task lifetime and revoke | P0 | NOT STARTED | | | | |
@@ -584,14 +584,14 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### AUTH-01 Process admin token and org admin token
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/httpapi/server.go, internal/config/config.go, cmd/keywarden/main.go
 - **Expected behavior:** Admin routes require a bearer token. In single-tenant mode that token is KEYWARDEN_ADMIN_TOKEN and it must be at least 16 characters. In multi-tenant mode org routes require that org's kwa_ token. The process token is only for org bootstrap.
 - **Acceptance:**
-- [ ] The configured admin token lists agents.
-- [ ] A missing header and a short token are rejected.
-- [ ] A task token cannot call an admin route.
+- [x] The configured admin token lists agents.
+- [x] A missing header and a short token are rejected.
+- [x] A task token cannot call an admin route.
 - **Test cases:**
 - Send the documented happy-path request and record the status and body.
 - Repeat with an empty body, whitespace, a very long field, the wrong JSON types, an emoji, and a non-English string.
@@ -601,11 +601,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Point an upstream or the database at a closed port and confirm the failure is a tool or API error, not a crash.
 - **Dependencies:** DATA-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Missing, short, and task tokens on /v1/agents returned 401.
 
 ### AUTH-02 Create organizations and org tokens
 
