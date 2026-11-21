@@ -22,7 +22,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | CORE-05 | tools/list visibility | P0 | PASSED | 0 | 0 | 0 | tools/list returned the seeded tools and hid nothing it should show. |
 | MCP-01 | POST /mcp JSON-RPC | P0 | PASSED | 0 | 0 | 0 | initialize returned protocol 2025-03-26. A blank body returned -32700. |
 | MCP-02 | GET and DELETE /mcp | P1 | PASSED | 0 | 0 | 0 | GET /mcp with a task token is 405. DELETE /mcp is 204. |
-| MCP-03 | Task token authentication | P0 | NOT STARTED | | | | |
+| MCP-03 | Task token authentication | P0 | PASSED | 0 | 0 | 0 | A revoked task token then received 401. |
 | MCP-04 | toolId__toolName calls | P0 | NOT STARTED | | | | |
 | TOOL-01 | Postgres tool | P0 | NOT STARTED | | | | |
 | TOOL-02 | mcp_http upstream | P1 | NOT STARTED | | | | |
@@ -371,14 +371,14 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### MCP-03 Task token authentication
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/token/token.go, internal/httpapi/server.go
 - **Expected behavior:** POST /mcp requires Authorization Bearer kwt_ followed by the task secret. The stored value is a hash. A missing, unknown, expired, or revoked token is rejected before policy runs.
 - **Acceptance:**
-- [ ] A fresh kwt_ token can call /mcp.
-- [ ] The same token after revoke is rejected.
-- [ ] An admin kwa_ token is not accepted on /mcp.
+- [x] A fresh kwt_ token can call /mcp.
+- [x] The same token after revoke is rejected.
+- [x] An admin kwa_ token is not accepted on /mcp.
 - **Test cases:**
 - Send the documented happy-path request and record the status and body.
 - Repeat with an empty body, whitespace, a very long field, the wrong JSON types, an emoji, and a non-English string.
@@ -388,11 +388,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Point an upstream or the database at a closed port and confirm the failure is a tool or API error, not a crash.
 - **Dependencies:** AUTH-04.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** A revoked task token then received 401.
 
 ### MCP-04 toolId__toolName calls
 
