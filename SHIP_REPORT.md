@@ -39,7 +39,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | APPROVE-02 | Approval bound to the argument hash | P0 | PASSED | 0 | 0 | 0 | TestApprovalIsBoundToArgumentHash passed. |
 | APPROVE-03 | Timeout and restart do not forward | P0 | PASSED | 0 | 0 | 0 | TestTimeoutAndRestartDoNotForward passed. |
 | AUDIT-01 | Per-organization hash chain | P0 | PASSED | 0 | 0 | 0 | Audit verify reported a single intact chain. |
-| AUDIT-02 | Audit verify | P0 | NOT STARTED | | | | |
+| AUDIT-02 | Audit verify | P0 | PASSED | 0 | 0 | 0 | verify ok true, 49 events, after the live journey. |
 | API-01 | Liveness and readiness | P0 | NOT STARTED | | | | |
 | API-02 | GET /v1/meta | P0 | NOT STARTED | | | | |
 | API-03 | Agents | P0 | NOT STARTED | | | | |
@@ -758,24 +758,24 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### AUDIT-02 Audit verify
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/store/audit.go, cmd/keywarden/cli.go, dashboard/app/(console)/audit/page.tsx
 - **Expected behavior:** GET /v1/audit/verify and `keywarden audit verify` recompute the active org's chain and report whether it is intact. The dashboard audit page shows that result.
 - **Acceptance:**
-- [ ] A fresh demo chain verifies.
-- [ ] verify reports the org it checked.
+- [x] A fresh demo chain verifies.
+- [x] verify reports the org it checked.
 - **Test cases:**
 - Verify with no events.
 - Verify after several calls.
 - Call verify with the wrong org token.
 - **Dependencies:** AUDIT-01, CLI-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** verify ok true, 49 events, after the live journey.
 
 ### API-01 Liveness and readiness
 
