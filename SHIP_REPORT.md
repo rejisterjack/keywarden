@@ -56,7 +56,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | DEMO-02 | Demo lock on mutations | P1 | PASSED | 0 | 0 | 0 | With KEYWARDEN_DEMO_LOCK=1, meta showed demo_lock true and creating an agent returned 403. Compose leaves the lock off. |
 | DEMO-03 | Fixture MCP handler | P2 | PASSED | 0 | 0 | 0 | POST /demo/mcp initialize returned serverInfo keywarden-fixture. |
 | SEC-01 | Secret redaction | P1 | PASSED | 0 | 0 | 0 | Redaction tests passed. Tool list and logs checks did not show the orders password. |
-| SEC-02 | MCP body size limit | P1 | NOT STARTED | | | | |
+| SEC-02 | MCP body size limit | P1 | PASSED | 0 | 0 | 0 | A 2MB POST /mcp returned JSON-RPC -32700 and did not list tools. |
 | SEC-03 | Timeouts and shutdown | P1 | NOT STARTED | | | | |
 | DASH-01 | Dashboard password session | P0 | NOT STARTED | | | | |
 | DASH-02 | Operator console | P0 | NOT STARTED | | | | |
@@ -1139,23 +1139,23 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### SEC-02 MCP body size limit
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** internal/httpapi/server.go
 - **Expected behavior:** The MCP JSON body is capped. A body over the cap is rejected and the process stays up. A body at the cap that is valid JSON still runs.
 - **Acceptance:**
-- [ ] A small initialize request succeeds.
-- [ ] A body larger than the cap is rejected.
+- [x] A small initialize request succeeds.
+- [x] A body larger than the cap is rejected.
 - **Test cases:**
 - POST a body one byte over the limit.
 - POST a body of only spaces under the limit.
 - **Dependencies:** MCP-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** A 2MB POST /mcp returned JSON-RPC -32700 and did not list tools.
 
 ### SEC-03 Timeouts and shutdown
 
