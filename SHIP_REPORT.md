@@ -51,7 +51,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | RATE-01 | MCP rate limit | P1 | PASSED | 0 | 0 | 0 | 80 parallel tools/list calls: 59 returned 200 and 21 returned 429. |
 | CLI-01 | serve and seed | P0 | PASSED | 0 | 0 | 0 | The container runs /keywarden and version prints 0.1.1. |
 | CLI-02 | task, org, policy, audit, and version | P0 | PASSED | 0 | 0 | 0 | CLI command tests passed. |
-| CLI-03 | quickstart script | P0 | NOT STARTED | | | | |
+| CLI-03 | quickstart script | P0 | PASSED | 0 | 0 | 0 | scripts/quickstart.sh exited 0 against the compose demo. |
 | DEMO-01 | Demo secret allow-list | P1 | NOT STARTED | | | | |
 | DEMO-02 | Demo lock on mutations | P1 | NOT STARTED | | | | |
 | DEMO-03 | Fixture MCP handler | P2 | NOT STARTED | | | | |
@@ -1033,24 +1033,24 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### CLI-03 quickstart script
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** scripts/quickstart.sh, README.md
 - **Expected behavior:** The script issues a task, lets a SELECT succeed, sees a DROP denied, completes a DELETE only after approval, verifies the audit chain, and checks org isolation. It expects the compose demo and KEYWARDEN_ADMIN_TOKEN.
 - **Acceptance:**
-- [ ] The script exits 0 against a freshly seeded compose stack.
-- [ ] The script fails clearly when the proxy is down.
+- [x] The script exits 0 against a freshly seeded compose stack.
+- [x] The script fails clearly when the proxy is down.
 - **Test cases:**
 - Run it once.
 - Run it while an approval is left undecided.
 - Run it with the wrong admin token.
 - **Dependencies:** DEVOPS-03, TOOL-01, APPROVE-01, AUDIT-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** scripts/quickstart.sh exited 0 against the compose demo.
 
 ### DEMO-01 Demo secret allow-list
 
