@@ -16,7 +16,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | VAULT-01 | AES-GCM tool vault | P0 | PASSED | 0 | 0 | 0 | Vault tests passed. Stored ciphertext is not the plaintext password. |
 | VAULT-02 | Tool secrets stay write-only | P0 | PASSED | 0 | 0 | 0 | GET /v1/tools has no secret. A foreign DSN was rejected before it was stored. |
 | CORE-01 | Proxy pipeline | P0 | PASSED | 0 | 0 | 0 | Quickstart: SELECT allowed, DROP denied, DELETE only after approval. |
-| CORE-02 | JSON rules policy | P0 | NOT STARTED | | | | |
+| CORE-02 | JSON rules policy | P0 | PASSED | 0 | 0 | 0 | DROP TABLE was denied by the orders-destroy rule. |
 | CORE-03 | Rego policy engine | P1 | NOT STARTED | | | | |
 | CORE-04 | SQL classifier | P0 | NOT STARTED | | | | |
 | CORE-05 | tools/list visibility | P0 | NOT STARTED | | | | |
@@ -237,14 +237,14 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### CORE-02 JSON rules policy
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/policy/policy.go, examples/policy.json
 - **Expected behavior:** Rules are tested in order and the first match wins. No match denies the call. Match fields are agent, tool, and tool name. The when.sql predicate is read, mutating, or destructive.
 - **Acceptance:**
-- [ ] The demo read rule allows a SELECT from the support agent.
-- [ ] The demo mutation rule returns require_approval.
-- [ ] An unmatched agent or tool is denied.
+- [x] The demo read rule allows a SELECT from the support agent.
+- [x] The demo mutation rule returns require_approval.
+- [x] An unmatched agent or tool is denied.
 - **Test cases:**
 - Apply the example policy.
 - Apply an empty rules array.
@@ -252,11 +252,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Apply a policy whose effect is not allow, deny, or require_approval.
 - **Dependencies:** API-05.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** DROP TABLE was denied by the orders-destroy rule.
 
 ### CORE-03 Rego policy engine
 
