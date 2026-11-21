@@ -52,7 +52,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | CLI-01 | serve and seed | P0 | PASSED | 0 | 0 | 0 | The container runs /keywarden and version prints 0.1.1. |
 | CLI-02 | task, org, policy, audit, and version | P0 | PASSED | 0 | 0 | 0 | CLI command tests passed. |
 | CLI-03 | quickstart script | P0 | PASSED | 0 | 0 | 0 | scripts/quickstart.sh exited 0 against the compose demo. |
-| DEMO-01 | Demo secret allow-list | P1 | NOT STARTED | | | | |
+| DEMO-01 | Demo secret allow-list | P1 | PASSED | 0 | 0 | 0 | A postgres secret without kw_demo=fake returned 400. |
 | DEMO-02 | Demo lock on mutations | P1 | NOT STARTED | | | | |
 | DEMO-03 | Fixture MCP handler | P2 | NOT STARTED | | | | |
 | SEC-01 | Secret redaction | P1 | NOT STARTED | | | | |
@@ -1054,25 +1054,25 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DEMO-01 Demo secret allow-list
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** internal/secret/secret.go, docs/limitations.md
 - **Expected behavior:** When demo mode is on, tool secrets must be part of the seeded fictional set. A real-looking DSN, cloud key, or token that is not in that set is refused. The public demo is documented as fictional data.
 - **Acceptance:**
-- [ ] The seeded orders secret is accepted.
-- [ ] A secret outside the fictional set is rejected.
-- [ ] Demo mode off accepts an operator-supplied secret.
+- [x] The seeded orders secret is accepted.
+- [x] A secret outside the fictional set is rejected.
+- [x] Demo mode off accepts an operator-supplied secret.
 - **Test cases:**
 - Submit the demo DSN.
 - Submit a long random token.
 - Submit an empty secret.
 - **Dependencies:** VAULT-02, DATA-03.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** A postgres secret without kw_demo=fake returned 400.
 
 ### DEMO-02 Demo lock on mutations
 
