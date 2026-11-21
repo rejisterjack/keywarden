@@ -44,7 +44,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | API-02 | GET /v1/meta | P0 | PASSED | 0 | 0 | 0 | Meta reported demo true, version 0.1.1, and the default org. No token required. |
 | API-03 | Agents | P0 | PASSED | 0 | 0 | 0 | A slug was required. A script-tag name was stored as data. |
 | API-04 | Tools | P0 | PASSED | 0 | 0 | 0 | A secret string was 400. A foreign JSON secret was rejected in demo mode. |
-| API-05 | Policies | P0 | NOT STARTED | | | | |
+| API-05 | Policies | P0 | PASSED | 0 | 0 | 0 | Policy boundary tests passed. The seeded policy is version 1 and active. |
 | API-06 | Tasks admin API | P0 | NOT STARTED | | | | |
 | API-07 | Approvals admin API | P0 | NOT STARTED | | | | |
 | API-08 | Audit list | P1 | NOT STARTED | | | | |
@@ -875,24 +875,24 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### API-05 Policies
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/httpapi/server.go, dashboard/app/(console)/policy/page.tsx, examples/policy.json
 - **Expected behavior:** GET /v1/policies lists versions. GET /v1/policies/active returns the active document. POST /v1/policies applies a new version and makes it active. An invalid document is rejected and the previous active policy stays active.
 - **Acceptance:**
-- [ ] Applying examples/policy.json makes it active.
-- [ ] A broken document does not replace the active policy.
-- [ ] Demo lock rejects apply.
+- [x] Applying examples/policy.json makes it active.
+- [x] A broken document does not replace the active policy.
+- [x] Demo lock rejects apply.
 - **Test cases:**
 - Apply the example.
 - Apply empty JSON, a rules value that is a string, and a Rego module with a syntax error.
 - **Dependencies:** CORE-02, CORE-03, DEMO-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Policy boundary tests passed. The seeded policy is version 1 and active.
 
 ### API-06 Tasks admin API
 
