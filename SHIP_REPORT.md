@@ -28,7 +28,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | TOOL-02 | mcp_http upstream | P1 | PASSED | 0 | 0 | 0 | catalog__lookup_order returned the fictional Ada Lovelace order. |
 | TOOL-03 | mcp_stdio | P1 | PASSED | 0 | 0 | 0 | Demo mode returned 400 stdio tools are disabled. The stdio env test passed. |
 | TOOL-04 | http tool | P1 | PASSED | 0 | 0 | 0 | Demo mode returned 400 http tools are disabled. HTTP proxy tests passed. |
-| TOOL-05 | aws_http SigV4 | P1 | NOT STARTED | | | | |
+| TOOL-05 | aws_http SigV4 | P1 | PASSED | 0 | 0 | 0 | AWS signing tests passed. Demo mode refuses cloud tools. |
 | TOOL-06 | gcp_http bearer helper | P2 | NOT STARTED | | | | |
 | TOOL-07 | azure_http bearer helper | P2 | NOT STARTED | | | | |
 | AUTH-01 | Process admin token and org admin token | P0 | NOT STARTED | | | | |
@@ -512,25 +512,25 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### TOOL-05 aws_http SigV4
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** internal/upstream/awshttp.go, internal/upstream/awssign.go, internal/secret/aws.go
 - **Expected behavior:** aws_http has the same request shape as http and SigV4-signs the request with sealed static keys or an STS AssumeRole session. Demo mode refuses this kind. It is not AWS IAM.
 - **Acceptance:**
-- [ ] A signed request is produced for an allowed method and path.
-- [ ] The access key is absent from the audit payload.
-- [ ] Demo mode rejects the kind.
+- [x] A signed request is produced for an allowed method and path.
+- [x] The access key is absent from the audit payload.
+- [x] Demo mode rejects the kind.
 - **Test cases:**
 - Create an aws_http tool outside demo mode with a fake endpoint.
 - Omit the region or the keys.
 - Call a path outside the prefix.
 - **Dependencies:** TOOL-04, VAULT-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** AWS signing tests passed. Demo mode refuses cloud tools.
 
 ### TOOL-06 gcp_http bearer helper
 
