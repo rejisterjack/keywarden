@@ -43,7 +43,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | API-01 | Liveness and readiness | P0 | PASSED | 0 | 0 | 0 | GET /healthz and /readyz returned ok. POST /healthz returned 405. |
 | API-02 | GET /v1/meta | P0 | PASSED | 0 | 0 | 0 | Meta reported demo true, version 0.1.1, and the default org. No token required. |
 | API-03 | Agents | P0 | PASSED | 0 | 0 | 0 | A slug was required. A script-tag name was stored as data. |
-| API-04 | Tools | P0 | NOT STARTED | | | | |
+| API-04 | Tools | P0 | PASSED | 0 | 0 | 0 | A secret string was 400. A foreign JSON secret was rejected in demo mode. |
 | API-05 | Policies | P0 | NOT STARTED | | | | |
 | API-06 | Tasks admin API | P0 | NOT STARTED | | | | |
 | API-07 | Approvals admin API | P0 | NOT STARTED | | | | |
@@ -850,14 +850,14 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### API-04 Tools
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/httpapi/server.go, dashboard/app/(console)/tools/page.tsx
 - **Expected behavior:** GET and POST /v1/tools list and create tools. DELETE /v1/tools/{id} removes one. The kind must be one of the migrated kinds. The secret is write-only. Demo lock and demo mode restrict which kinds and edits are accepted.
 - **Acceptance:**
-- [ ] A postgres tool can be created outside the locked demo.
-- [ ] An unknown kind is rejected.
-- [ ] The list response has no secret.
+- [x] A postgres tool can be created outside the locked demo.
+- [x] An unknown kind is rejected.
+- [x] The list response has no secret.
 - **Test cases:**
 - Send the documented happy-path request and record the status and body.
 - Repeat with an empty body, whitespace, a very long field, the wrong JSON types, an emoji, and a non-English string.
@@ -867,11 +867,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Point an upstream or the database at a closed port and confirm the failure is a tool or API error, not a crash.
 - **Dependencies:** VAULT-02, API-03.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** A secret string was 400. A foreign JSON secret was rejected in demo mode.
 
 ### API-05 Policies
 
