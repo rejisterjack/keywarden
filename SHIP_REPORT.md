@@ -40,7 +40,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | APPROVE-03 | Timeout and restart do not forward | P0 | PASSED | 0 | 0 | 0 | TestTimeoutAndRestartDoNotForward passed. |
 | AUDIT-01 | Per-organization hash chain | P0 | PASSED | 0 | 0 | 0 | Audit verify reported a single intact chain. |
 | AUDIT-02 | Audit verify | P0 | PASSED | 0 | 0 | 0 | verify ok true, 49 events, after the live journey. |
-| API-01 | Liveness and readiness | P0 | NOT STARTED | | | | |
+| API-01 | Liveness and readiness | P0 | PASSED | 0 | 0 | 0 | GET /healthz and /readyz returned ok. POST /healthz returned 405. |
 | API-02 | GET /v1/meta | P0 | NOT STARTED | | | | |
 | API-03 | Agents | P0 | NOT STARTED | | | | |
 | API-04 | Tools | P0 | NOT STARTED | | | | |
@@ -779,25 +779,25 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### API-01 Liveness and readiness
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/httpapi/server.go
 - **Expected behavior:** GET /healthz reports that the process is up. GET /readyz reports that the database is reachable. Neither route requires a bearer token.
 - **Acceptance:**
-- [ ] healthz returns success without a token.
-- [ ] readyz returns success when Postgres is up.
-- [ ] readyz fails when the database is unreachable.
+- [x] healthz returns success without a token.
+- [x] readyz returns success when Postgres is up.
+- [x] readyz fails when the database is unreachable.
 - **Test cases:**
 - GET both routes.
 - POST /healthz.
 - Stop Postgres and request readyz.
 - **Dependencies:** DATA-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** GET /healthz and /readyz returned ok. POST /healthz returned 405.
 
 ### API-02 GET /v1/meta
 
