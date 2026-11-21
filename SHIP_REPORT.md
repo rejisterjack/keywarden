@@ -29,7 +29,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | TOOL-03 | mcp_stdio | P1 | PASSED | 0 | 0 | 0 | Demo mode returned 400 stdio tools are disabled. The stdio env test passed. |
 | TOOL-04 | http tool | P1 | PASSED | 0 | 0 | 0 | Demo mode returned 400 http tools are disabled. HTTP proxy tests passed. |
 | TOOL-05 | aws_http SigV4 | P1 | PASSED | 0 | 0 | 0 | AWS signing tests passed. Demo mode refuses cloud tools. |
-| TOOL-06 | gcp_http bearer helper | P2 | NOT STARTED | | | | |
+| TOOL-06 | gcp_http bearer helper | P2 | PASSED | 0 | 0 | 0 | GCP bearer tests passed. |
 | TOOL-07 | azure_http bearer helper | P2 | NOT STARTED | | | | |
 | AUTH-01 | Process admin token and org admin token | P0 | NOT STARTED | | | | |
 | AUTH-02 | Create organizations and org tokens | P1 | NOT STARTED | | | | |
@@ -534,14 +534,14 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### TOOL-06 gcp_http bearer helper
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P2
 - **Files:** internal/upstream/cloudhttp.go, internal/secret/cloud.go, internal/store/migrations/005_gcp_azure_http_kind.sql
 - **Expected behavior:** gcp_http reuses the HTTPS request shape and injects a sealed Bearer access_token plus optional extra headers. Keywarden does not mint or rotate that token. Demo mode refuses the kind.
 - **Acceptance:**
-- [ ] An allowed request carries the bearer token to the sealed base URL.
-- [ ] The token is not in the audit body.
-- [ ] Demo mode rejects the kind.
+- [x] An allowed request carries the bearer token to the sealed base URL.
+- [x] The token is not in the audit body.
+- [x] Demo mode rejects the kind.
 - **Test cases:**
 - Send the documented happy-path request and record the status and body.
 - Repeat with an empty body, whitespace, a very long field, the wrong JSON types, an emoji, and a non-English string.
@@ -551,11 +551,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Point an upstream or the database at a closed port and confirm the failure is a tool or API error, not a crash.
 - **Dependencies:** TOOL-04.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** GCP bearer tests passed.
 
 ### TOOL-07 azure_http bearer helper
 
