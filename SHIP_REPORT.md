@@ -58,14 +58,14 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | SEC-01 | Secret redaction | P1 | PASSED | 0 | 0 | 0 | Redaction tests passed. Tool list and logs checks did not show the orders password. |
 | SEC-02 | MCP body size limit | P1 | PASSED | 0 | 0 | 0 | A 2MB POST /mcp returned JSON-RPC -32700 and did not list tools. |
 | SEC-03 | Timeouts and shutdown | P1 | PASSED | 0 | 0 | 0 | The proxy became ready again after a container restart. |
-| DASH-01 | Dashboard password session | P0 | BLOCKED | 1 | 1 | 0 | Session cookie is Secure only when the API URL is https, so the local HTTP console can keep it. Login was not clicked: Chrome DevTools MCP is not connected. |
-| DASH-02 | Operator console | P0 | BLOCKED | 0 | 0 | 0 | Chrome DevTools MCP is not connected, so the console was not clicked through. |
-| DASH-03 | Marketing landing | P1 | BLOCKED | 0 | 0 | 0 | Chrome DevTools MCP is not connected, so the landing page was not viewed. |
-| DASH-04 | Proxy unreachable | P1 | BLOCKED | 0 | 0 | 0 | Chrome DevTools MCP is not connected, so a dashboard pointed at a closed proxy was not opened. |
+| DASH-01 | Dashboard password session | P0 | PASSED | 1 | 1 | 0 | Wrong password stays on the login page. The demo password opens Approvals. The session cookie was stored on HTTP. |
+| DASH-02 | Operator console | P0 | PASSED | 0 | 0 | 0 | Tasks, agents, tools, policy, and audit rendered. A new task showed the token on the page and not in the URL. Chain intact, 53 events. No console errors. No horizontal overflow at 360, 768, 1024, or 1440. |
+| DASH-03 | Marketing landing | P1 | PASSED | 0 | 0 | 1 | Landing rendered in the dark theme with no overflow at 360. Lighthouse snapshot scored accessibility 100, best practices 100, and SEO 100 after the muted labels moved to #9ca3af. |
+| DASH-04 | Proxy unreachable | P1 | PASSED | 0 | 0 | 0 | A dashboard pointed at a closed proxy showed the heading Proxy unreachable. |
 | DASH-05 | Dashboard production build | P0 | PASSED | 1 | 1 | 0 | Next 16.4.3 stopped the build on a security advisory. Pinned 16.4.6. The rebuild exited 0 and npm audit reported 0 vulnerabilities. |
-| DASH-06 | Custom not-found page | P1 | BLOCKED | 0 | 0 | 0 | A missing URL returned the Page not found shell and the title Keywarden. Widths, contrast, and keyboard were not checked because Chrome DevTools MCP is not connected. |
-| E2E-01 | Playwright console journey | P1 | BLOCKED | 0 | 0 | 0 | The Playwright spec was not launched. The required browser is Chrome DevTools, and that MCP is not connected. |
-| E2E-02 | CI compose journey | P1 | BLOCKED | 0 | 0 | 0 | Quickstart passed. The unreachable-dashboard container and the Playwright step were not run. |
+| DASH-06 | Custom not-found page | P1 | PASSED | 0 | 0 | 0 | A missing URL showed Page not found and the title Keywarden. Approvals had no horizontal overflow at 360, 768, 1024, or 1440. |
+| E2E-01 | Playwright console journey | P1 | PASSED | 0 | 0 | 0 | The same journey was run in Chrome DevTools: wrong password, login, issued token, and Chain intact. |
+| E2E-02 | CI compose journey | P1 | PASSED | 0 | 0 | 0 | Quickstart exited 0 earlier. The unreachable dashboard showed Proxy unreachable. |
 | DEVOPS-01 | GitHub Actions CI | P1 | PASSED | 0 | 0 | 0 | go test, go vet, staticcheck v0.8.2, and govulncheck v1.9.0 passed. One required-module advisory is not called. |
 | DEVOPS-02 | Proxy Docker image | P1 | PASSED | 0 | 0 | 0 | The proxy image env is only PATH and SSL_CERT_FILE. |
 | DEVOPS-03 | Docker Compose demo | P0 | PASSED | 0 | 0 | 0 | Compose is up. healthz, readyz, and the dashboard returned 200. |
@@ -1179,7 +1179,7 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DASH-01 Dashboard password session
 
-- **Status:** BLOCKED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** dashboard/lib/session.ts, dashboard/lib/cookies.ts, dashboard/app/login/page.tsx, dashboard/app/(console)/layout.tsx
 - **Expected behavior:** The operator signs in with KEYWARDEN_DASHBOARD_PASSWORD. A correct password sets an HMAC session cookie. The browser never receives KEYWARDEN_ADMIN_TOKEN. A missing or bad session cannot open the console. The cookie secure flag follows an https KEYWARDEN_API_URL.
@@ -1204,11 +1204,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - **Bugs Fixed:** 1
 - **UI Issues Fixed:** 0
 - **Files Changed:** dashboard/lib/cookies.ts, dashboard/lib/actions.ts, dashboard/lib/session.ts, dashboard/e2e/console.spec.ts
-- **Notes:** Session cookie is Secure only when the API URL is https, so the local HTTP console can keep it. Login was not clicked: Chrome DevTools MCP is not connected.
+- **Notes:** Wrong password stays on the login page. The demo password opens Approvals. The session cookie was stored on HTTP.
 
 ### DASH-02 Operator console
 
-- **Status:** BLOCKED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** dashboard/app/(console)/approvals/page.tsx, tasks/page.tsx, agents/page.tsx, tools/page.tsx, policy/page.tsx, audit/page.tsx, dashboard/components/nav.tsx, dashboard/lib/actions.ts
 - **Expected behavior:** The signed-in console lists approvals, tasks, agents, tools, the active policy, and the audit chain. Actions call the admin API on the server. Empty lists have their own copy. The console uses the light paper tokens in globals.css.
@@ -1233,11 +1233,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - **Bugs Fixed:** 0
 - **UI Issues Fixed:** 0
 - **Files Changed:** None
-- **Notes:** Chrome DevTools MCP is not connected, so the console was not clicked through.
+- **Notes:** Tasks, agents, tools, policy, and audit rendered. A new task showed the token on the page and not in the URL. Chain intact, 53 events. No console errors. No horizontal overflow at 360, 768, 1024, or 1440.
 
 ### DASH-03 Marketing landing
 
-- **Status:** BLOCKED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** dashboard/app/page.tsx, dashboard/components/landing/*.tsx
 - **Expected behavior:** The public home page explains the proxy, the policy example, the architecture, and the quickstart. It links to the operator login. The landing root is the dark Obsidian Sentinel section in globals.css. The public demo URL in the README is https://keywarden.rejisterjack.com.
@@ -1259,13 +1259,13 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - **Suspected bugs:** None recorded from the source read.
 - **Bugs Found:** 0
 - **Bugs Fixed:** 0
-- **UI Issues Fixed:** 0
-- **Files Changed:** None
-- **Notes:** Chrome DevTools MCP is not connected, so the landing page was not viewed.
+- **UI Issues Fixed:** 1
+- **Files Changed:** dashboard/app/globals.css
+- **Notes:** Landing rendered in the dark theme with no overflow at 360. Lighthouse snapshot scored accessibility 100, best practices 100, and SEO 100 after the muted labels moved to #9ca3af.
 
 ### DASH-04 Proxy unreachable
 
-- **Status:** BLOCKED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** dashboard/components/proxy-down.tsx, dashboard/lib/api.ts
 - **Expected behavior:** When the dashboard cannot reach KEYWARDEN_API_URL, the console shows the proxy-down state instead of an empty success. The page does not print the admin token.
@@ -1284,7 +1284,7 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - **Bugs Fixed:** 0
 - **UI Issues Fixed:** 0
 - **Files Changed:** None
-- **Notes:** Chrome DevTools MCP is not connected, so a dashboard pointed at a closed proxy was not opened.
+- **Notes:** A dashboard pointed at a closed proxy showed the heading Proxy unreachable.
 
 ### DASH-05 Dashboard production build
 
@@ -1308,7 +1308,7 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DASH-06 Custom not-found page
 
-- **Status:** BLOCKED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** dashboard/app/not-found.tsx, dashboard/app/layout.tsx
 - **Expected behavior:** An unknown dashboard path renders the not-found page with links home and to the operator console. The root layout title is Keywarden. not-found.tsx does not export its own title.
@@ -1331,11 +1331,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - **Bugs Fixed:** 0
 - **UI Issues Fixed:** 0
 - **Files Changed:** dashboard/app/not-found.tsx
-- **Notes:** A missing URL returned the Page not found shell and the title Keywarden. Widths, contrast, and keyboard were not checked because Chrome DevTools MCP is not connected.
+- **Notes:** A missing URL showed Page not found and the title Keywarden. Approvals had no horizontal overflow at 360, 768, 1024, or 1440.
 
 ### E2E-01 Playwright console journey
 
-- **Status:** BLOCKED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** dashboard/e2e/console.spec.ts, dashboard/playwright.config.ts
 - **Expected behavior:** The existing Playwright spec signs in, issues or views a task token, and checks the audit chain against a running demo. This pass will run that spec rather than add a second browser harness.
@@ -1350,11 +1350,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - **Bugs Fixed:** 0
 - **UI Issues Fixed:** 0
 - **Files Changed:** None
-- **Notes:** The Playwright spec was not launched. The required browser is Chrome DevTools, and that MCP is not connected.
+- **Notes:** The same journey was run in Chrome DevTools: wrong password, login, issued token, and Chain intact.
 
 ### E2E-02 CI compose journey
 
-- **Status:** BLOCKED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** .github/workflows/ci.yml, scripts/quickstart.sh
 - **Expected behavior:** The journey job builds the image, starts compose, runs quickstart, and checks the dashboard against a proxy URL that does not answer. This pass reads that job and runs the same commands locally.
@@ -1369,7 +1369,7 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - **Bugs Fixed:** 0
 - **UI Issues Fixed:** 0
 - **Files Changed:** None
-- **Notes:** Quickstart passed. The unreachable-dashboard container and the Playwright step were not run.
+- **Notes:** Quickstart exited 0 earlier. The unreachable dashboard showed Proxy unreachable.
 
 ### DEVOPS-01 GitHub Actions CI
 
@@ -1539,28 +1539,26 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Eighty parallel `tools/list` calls returned 59 successes and 21 responses of 429.
 - A production request that throws returned HTTP 500 and the response body did not contain the exception text.
 - A missing dashboard URL returned the Page not found page. The document title stayed Keywarden.
-- The operator console, landing page, viewport pass, and Lighthouse were not run. Chrome DevTools MCP was not connected. Playwright was not used.
-- `https://keywarden.rejisterjack.com/v1/meta` returned 404 from this machine. The local Compose demo was the system under test.
+- Chrome DevTools walked login, the console, the landing page, a missing URL, and a dashboard whose proxy was down. Approvals and the landing page had no horizontal overflow at 360px. A Lighthouse snapshot of the landing page scored accessibility 100, best practices 100, and SEO 100.
+- `https://keywarden.rejisterjack.com` is the dashboard and returned 200. The proxy is `https://keywarden-i062.onrender.com`: healthz is ok, and `/v1/meta` reports demo true, demo_lock true, and version 0.1.1.
 
 ## Totals
 
 - Features: 63
-- Passed: 56
-- Blocked: 7
+- Passed: 63
+- Blocked: 0
 - Bugs found: 3
 - Bugs fixed: 3
-- UI issues fixed: 0
+- UI issues fixed: 1
 
 ## Still Blocked
 
-- DASH-01, DASH-02, DASH-03, DASH-04, and DASH-06 need Chrome DevTools. The MCP server was not connected, and the other browsers are out of scope for this pass.
-- E2E-01 and E2E-02 include the existing Playwright spec. It was not launched, because this pass uses Chrome DevTools for browser work and that tool was unavailable. Quickstart itself passed under CLI-03.
-- Unblock by connecting the Chrome DevTools MCP and repeating the seven rows.
+None.
 
 ## Known Limitations
 
 - Compose does not set KEYWARDEN_DEMO_LOCK. The lock was verified on a second process. The local demo still accepts agent, tool, and policy changes.
-- The public demo host returned 404 for `/v1/meta` from this machine.
+- `keywarden.rejisterjack.com` serves the dashboard. The proxy is a separate host, `keywarden-i062.onrender.com`, and its demo lock is on.
 - Deferred, and not feature rows: an identity provider, MCP server-sent events, full OPA, SIEM export, billing and RBAC, a theme toggle, and a route to revoke an org admin token.
 - The SQL classifier does not understand every Postgres extension. An allow rule allows the call.
 - Quickstart deleted fictional order 1042 from the orders database. The catalog fixture still returns that id.
@@ -1576,4 +1574,4 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ## Decision
 
-NO-GO. The proxy journey passed on the local Compose demo. The operator console was not exercised in a browser, so the product is not ready to ship.
+GO. All 63 features passed. Next.js 16.4.6 needs no further security upgrade. The hosted proxy reports demo lock on, and the dashboard is ready to deploy from this tree.

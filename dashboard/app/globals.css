@@ -501,7 +501,7 @@ th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: 
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #6b7280;
+  color: #9ca3af;
 }
 .kw-metric-divider {
   width: 1px;
@@ -678,7 +678,7 @@ th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: 
   gap: 6px;
 }
 .kw-label {
-  color: #6b7280;
+  color: #9ca3af;
 }
 .kw-value {
   color: #e5e7eb;
@@ -729,7 +729,7 @@ th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: 
 
 .kw-narrative-label {
   font-size: 11px;
-  color: #6b7280;
+  color: #9ca3af;
   display: block;
   margin-bottom: 2px;
 }
@@ -786,7 +786,7 @@ th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: 
 .kw-code-label {
   font-size: 10px;
   text-transform: uppercase;
-  color: #6b7280;
+  color: #9ca3af;
   margin-bottom: 4px;
   font-family: var(--font-mono), monospace;
 }
@@ -923,7 +923,7 @@ th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: 
 .kw-node-tech {
   font-size: 10px;
   font-family: var(--font-mono), monospace;
-  color: #6b7280;
+  color: #9ca3af;
   background: rgba(255, 255, 255, 0.04);
   padding: 2px 6px;
   border-radius: 4px;
@@ -1012,7 +1012,7 @@ th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: 
   font-size: 12px;
 }
 .kw-spec-label {
-  color: #6b7280;
+  color: #9ca3af;
 }
 .kw-spec-val {
   color: #e5e7eb;
@@ -1184,7 +1184,7 @@ th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: 
 .kw-eval-label {
   font-size: 11px;
   font-family: var(--font-mono), monospace;
-  color: #6b7280;
+  color: #9ca3af;
   text-transform: uppercase;
   margin-bottom: 6px;
 }
@@ -1311,7 +1311,7 @@ th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: 
 
 .kw-block-timestamp {
   font-size: 11px;
-  color: #6b7280;
+  color: #9ca3af;
 }
 
 .kw-block-fields {
@@ -1328,7 +1328,7 @@ th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: 
 }
 
 .kw-field-label {
-  color: #6b7280;
+  color: #9ca3af;
   font-size: 10px;
   text-transform: uppercase;
 }
@@ -1361,7 +1361,7 @@ th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: 
 }
 
 .kw-advisory-pill {
-  color: #6b7280;
+  color: #9ca3af;
 }
 
 .kw-audit-footer-note {
@@ -1538,7 +1538,7 @@ th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: 
 
 .kw-card-foot {
   font-size: 12px;
-  color: #6b7280;
+  color: #9ca3af;
 }
 .kw-card-foot code {
   color: #a7f3d0;
@@ -1642,7 +1642,7 @@ th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: 
 
 .kw-footer-copy {
   font-size: 12px;
-  color: #6b7280;
+  color: #9ca3af;
   margin-top: auto;
 }
 
