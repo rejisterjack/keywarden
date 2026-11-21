@@ -18,7 +18,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | CORE-01 | Proxy pipeline | P0 | PASSED | 0 | 0 | 0 | Quickstart: SELECT allowed, DROP denied, DELETE only after approval. |
 | CORE-02 | JSON rules policy | P0 | PASSED | 0 | 0 | 0 | DROP TABLE was denied by the orders-destroy rule. |
 | CORE-03 | Rego policy engine | P1 | PASSED | 0 | 0 | 0 | TestRegoPolicyEngine and the Rego package tests passed. |
-| CORE-04 | SQL classifier | P0 | NOT STARTED | | | | |
+| CORE-04 | SQL classifier | P0 | PASSED | 0 | 0 | 0 | Quickstart denied DROP. SQL boundary tests did not dial. |
 | CORE-05 | tools/list visibility | P0 | NOT STARTED | | | | |
 | MCP-01 | POST /mcp JSON-RPC | P0 | NOT STARTED | | | | |
 | MCP-02 | GET and DELETE /mcp | P1 | NOT STARTED | | | | |
@@ -282,24 +282,24 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### CORE-04 SQL classifier
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** internal/policy/sql.go
 - **Expected behavior:** One SQL statement is labeled read, mutating, or destructive. DROP, TRUNCATE, ALTER, GRANT, REVOKE, and other DDL are destructive. INSERT, UPDATE, DELETE, and MERGE are mutating. A batch of more than one statement is destructive and the Postgres tool refuses it.
 - **Acceptance:**
-- [ ] SELECT is read.
-- [ ] DELETE is mutating.
-- [ ] DROP and a two-statement batch are destructive.
+- [x] SELECT is read.
+- [x] DELETE is mutating.
+- [x] DROP and a two-statement batch are destructive.
 - **Test cases:**
 - Classify SELECT, whitespace-only SQL, a comment-only statement, DELETE, DROP, and `SELECT 1; DROP TABLE t`.
 - Include a non-English string literal and confirm the class follows the statement verb.
 - **Dependencies:** TOOL-01, CORE-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** None
+- **Notes:** Quickstart denied DROP. SQL boundary tests did not dial.
 
 ### CORE-05 tools/list visibility
 
