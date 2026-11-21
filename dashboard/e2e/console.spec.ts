@@ -16,7 +16,12 @@ test("login, task token, and audit chain", async ({ page }) => {
   const session = (await page.context().cookies()).find((cookie) => cookie.name === "kw_session");
   expect(session?.httpOnly).toBe(true);
   expect(session?.sameSite).toBe("Lax");
-  expect(session?.secure).toBe(true);
+  const base = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
+  if (base.startsWith("https://")) {
+    expect(session?.secure).toBe(true);
+  } else {
+    expect(session?.secure).toBeFalsy();
+  }
 
   await page.goto("/tasks");
   await page.locator("#task-agent").fill("support");

@@ -58,7 +58,7 @@ This report was executed against the local Compose demo on 21 Nov 2026. Statuses
 | SEC-01 | Secret redaction | P1 | PASSED | 0 | 0 | 0 | Redaction tests passed. Tool list and logs checks did not show the orders password. |
 | SEC-02 | MCP body size limit | P1 | PASSED | 0 | 0 | 0 | A 2MB POST /mcp returned JSON-RPC -32700 and did not list tools. |
 | SEC-03 | Timeouts and shutdown | P1 | PASSED | 0 | 0 | 0 | The proxy became ready again after a container restart. |
-| DASH-01 | Dashboard password session | P0 | NOT STARTED | | | | |
+| DASH-01 | Dashboard password session | P0 | BLOCKED | 1 | 1 | 0 | Session cookie is Secure only when the API URL is https, so the local HTTP console can keep it. Login was not clicked: Chrome DevTools MCP is not connected. |
 | DASH-02 | Operator console | P0 | NOT STARTED | | | | |
 | DASH-03 | Marketing landing | P1 | NOT STARTED | | | | |
 | DASH-04 | Proxy unreachable | P1 | NOT STARTED | | | | |
@@ -1179,7 +1179,7 @@ BUILD gaps are feature rows. DEFER gaps are not.
 
 ### DASH-01 Dashboard password session
 
-- **Status:** NOT STARTED
+- **Status:** BLOCKED
 - **Priority:** P0
 - **Files:** dashboard/lib/session.ts, dashboard/lib/cookies.ts, dashboard/app/login/page.tsx, dashboard/app/(console)/layout.tsx
 - **Expected behavior:** The operator signs in with KEYWARDEN_DASHBOARD_PASSWORD. A correct password sets an HMAC session cookie. The browser never receives KEYWARDEN_ADMIN_TOKEN. A missing or bad session cannot open the console. The cookie secure flag follows an https KEYWARDEN_API_URL.
@@ -1200,11 +1200,11 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - Confirm the browser console has no error from the action.
 - **Dependencies:** DASH-05.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 1
+- **Bugs Fixed:** 1
+- **UI Issues Fixed:** 0
+- **Files Changed:** dashboard/lib/cookies.ts, dashboard/lib/actions.ts, dashboard/lib/session.ts, dashboard/e2e/console.spec.ts
+- **Notes:** Session cookie is Secure only when the API URL is https, so the local HTTP console can keep it. Login was not clicked: Chrome DevTools MCP is not connected.
 
 ### DASH-02 Operator console
 
