@@ -2,15 +2,35 @@ name: release
 
 on:
   push:
-    tags:
-      - "v*"
+    branches: [main]
 
 permissions:
   contents: write
   packages: write
 
 jobs:
+  release-tag:
+    if: "startsWith(github.event.head_commit.message, 'release: v')"
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+    steps:
+      - id: resolve
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          subject=$(printf '%s\n' "$COMMIT_MESSAGE" | head -n 1)
+          tag=${subject#"release: "}
+          tag=${tag%%[[:space:]]*}
+          tag=${tag%$'\r'}
+          if ! printf '%s' "$tag" | grep -Eq '^v[0-9][0-9A-Za-z._+-]*$'; then
+            echo "commit subject must start with release: vX.Y.Z (got: ${tag})"
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
   test:
+    needs: release-tag
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -40,7 +60,7 @@ jobs:
           staticcheck ./...
 
   binaries:
-    needs: test
+    needs: [release-tag, test]
     strategy:
       matrix:
         include:
@@ -58,12 +78,15 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.27.4"
+      - name: Tag the release commit
+        run: git tag -f "${{ needs.release-tag.outputs.tag }}"
       - name: Build
         env:
+          RELEASE_TAG: ${{ needs.release-tag.outputs.tag }}
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="${RELEASE_TAG#v}"
           name="keywarden_${version}_${GOOS}_${GOARCH}"
           mkdir -p dist
           CGO_ENABLED=0 go build -trimpath \
@@ -76,7 +99,7 @@ jobs:
           path: dist/*
 
   image:
-    needs: test
+    needs: [release-tag, test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -93,9 +116,9 @@ jobs:
           file: deploy/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          build-args: VERSION=${{ github.ref_name }}
+          build-args: VERSION=${{ needs.release-tag.outputs.tag }}
           tags: |
-            ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+            ghcr.io/${{ github.repository }}:${{ needs.release-tag.outputs.tag }}
             ghcr.io/${{ github.repository }}:latest
       - name: Make the package public
         continue-on-error: true
@@ -108,7 +131,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish:
-    needs: [binaries, image]
+    needs: [release-tag, binaries, image]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
@@ -120,11 +143,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          notes="Release ${GITHUB_REF_NAME}. See CHANGELOG.md."
+          tag="${{ needs.release-tag.outputs.tag }}"
+          notes="Release ${tag}. See CHANGELOG.md."
           if [ -f CHANGELOG.md ]; then
             notes="$(cat CHANGELOG.md)"
           fi
-          gh release create "${GITHUB_REF_NAME}" dist/* \
+          gh release create "${tag}" dist/* \
             --repo "${GITHUB_REPOSITORY}" \
-            --title "${GITHUB_REF_NAME}" \
+            --target "${GITHUB_SHA}" \
+            --title "${tag}" \
             --notes "${notes}"

@@ -1,6 +1,6 @@
 # Testing
 
-A change is releasable when CI is green and the release checks at the bottom of this page have been run on the commit that will be tagged. A bug fix adds a regression test in the package that owns the failure.
+A change is releasable when CI is green on `main` and the release checks at the bottom of this page have been run on the commit whose subject starts with `release:`. A bug fix adds a regression test in the package that owns the failure.
 
 ```
 unit tests
@@ -51,7 +51,7 @@ CI runs `go test ./...`, staticcheck, govulncheck, the dashboard production buil
 
 ## Regression
 
-Every push and pull request runs the CI jobs in `.github/workflows/ci.yml`. A failing test, staticcheck, govulncheck, dashboard build, image build, Compose journey, or Playwright smoke blocks the release.
+A push to `main` runs the CI jobs in `.github/workflows/ci.yml`. Nothing else does. A failing test, staticcheck, govulncheck, dashboard build, image build, Compose journey, or Playwright smoke blocks the release.
 
 Name a new regression test after the failure it locks in. The deny-does-not-dial assertion and `TestTimeoutAndRestartDoNotForward` are the pattern.
 
@@ -64,7 +64,7 @@ Name a new regression test after the failure it locks in. The deny-does-not-dial
 
 ## Release sign-off
 
-Run this once on the commit that will be tagged.
+Run this once on the `main` commit whose subject starts with `release:`.
 
 - `docker compose -f deploy/compose/docker-compose.yml up --build`, then `KEYWARDEN_ADMIN_TOKEN=local-dev-admin-token ./scripts/quickstart.sh`.
 - `keywarden version` inside the image matches the tag without the leading `v`.

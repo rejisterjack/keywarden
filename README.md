@@ -98,6 +98,12 @@ go test ./...
 
 The dashboard is the Next.js app in `dashboard/`. It needs `KEYWARDEN_API_URL`, `KEYWARDEN_ADMIN_TOKEN`, `KEYWARDEN_DASHBOARD_PASSWORD`, and `KEYWARDEN_SESSION_SECRET`.
 
+## CI/CD
+
+Workflows run only on a push to `main`. A pull request, any other branch, a tag push, a schedule, and a manual run do not start CI or CD. The only deploy target is production. Connect Render, Railway, or Vercel to `main` and leave preview and pull-request deploys off.
+
+A production publish runs on that same push when the commit subject starts with `release: v` and a version (`release: v1.2.3`). That publish builds the proxy binaries, pushes `ghcr.io/rejisterjack/keywarden:<version>` and `:latest`, and creates the GitHub Release. Any other push to `main` runs checks only. Pushing a tag does not start a workflow.
+
 ## Read this before you trust it
 
 Keywarden only governs calls that reach it. A credential the agent already has somewhere else is untouched. A rule you wrote as allow will allow the call. The public demo is fake data. The details are in [docs/limitations.md](docs/limitations.md), and the shape of the system is in [docs/architecture.md](docs/architecture.md). Operational notes are in [SECURITY.md](SECURITY.md).

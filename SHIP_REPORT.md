@@ -1376,7 +1376,7 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - **Status:** PASSED
 - **Priority:** P1
 - **Files:** .github/workflows/ci.yml
-- **Expected behavior:** On push and pull request, CI runs go test with Postgres 16, staticcheck, and govulncheck on Go 1.27.4, then builds the dashboard and the proxy image. The journey job depends on the image.
+- **Expected behavior:** On a push to main, CI runs go test with Postgres 16, staticcheck, and govulncheck on Go 1.27.4, then builds the dashboard and the proxy image. The journey job depends on the image.
 - **Acceptance:**
 - [x] The workflow file names those jobs and the Go and Node versions above.
 - [x] A local go test and dashboard build match the commands.
@@ -1434,9 +1434,9 @@ BUILD gaps are feature rows. DEFER gaps are not.
 - **Status:** PASSED
 - **Priority:** P2
 - **Files:** .github/workflows/release.yml, internal/version/version.go
-- **Expected behavior:** A v* tag runs tests and publishes a GitHub release. The workflow has contents and packages permissions. This pass reads it and does not push a tag.
+- **Expected behavior:** A push to main whose subject starts with `release: v` runs tests and publishes a GitHub release. The workflow has contents and packages permissions. This pass reads it and does not push a tag.
 - **Acceptance:**
-- [x] The workflow triggers on tags matching v*.
+- [x] The workflow runs on a push to main when the commit subject starts with `release: v`.
 - [x] The version stamp path is visible in the workflow.
 - [x] No tag is created during the report.
 - **Test cases:**

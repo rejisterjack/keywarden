@@ -80,11 +80,13 @@ The image listens with `/keywarden serve`. Migrations run on startup.
 
 ## Releases
 
-A git tag `v*` builds the proxy for Linux and macOS (amd64 and arm64) and publishes a multi-arch image:
+CI and CD run only on a push to `main`. Connect Render, Railway, and Vercel to `main` and leave preview and pull-request deploys off.
+
+A `main` commit whose subject starts with `release: v` and a version (`release: v1.2.3`) builds the proxy for Linux and macOS (amd64 and arm64) and publishes a multi-arch image:
 
 ```
 ghcr.io/rejisterjack/keywarden:<tag>
 ghcr.io/rejisterjack/keywarden:latest
 ```
 
-The binary's version string is the tag without the leading `v`. `latest` tracks the newest tag. The dashboard stays a separate image, built from `dashboard/Dockerfile`.
+The binary's version string is the release token without the leading `v`. `latest` tracks the newest release. The dashboard stays a separate image, built from `dashboard/Dockerfile`.
